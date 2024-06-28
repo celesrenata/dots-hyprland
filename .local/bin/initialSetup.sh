@@ -21,3 +21,4 @@ swww img "$imgpath" --transition-step 100 --transition-fps 60 \
 if [ $? -eq 0 ]; then
   touch ~/.local/share/initialSetup
 fi
+reboot
