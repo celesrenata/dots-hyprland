@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 cp -r ~/.configstaging ~/.config
 chown 1000:100 -R ~/.config
+chmod -R +w ~/.config
 imgpath=~/Backgrounds/love-is-love.jpg
 cursorposx=$(hyprctl cursorpos -j | gojq '.x' 2>/dev/null) || cursorposx=960
 cursorposy=$(hyprctl cursorpos -j | gojq '.y' 2>/dev/null) || cursorposy=540
