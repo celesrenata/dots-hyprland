@@ -5,7 +5,7 @@ import userOverrides from '../../user_options.js';
 let configOptions = {
     // General stuff
     'ai': {
-        'defaultGPTProvider': "openai",
+        'defaultGPTProvider': "ollama",
         'defaultTemperature': 0.9,
         'enhancements': true,
         'useHistory': true,
