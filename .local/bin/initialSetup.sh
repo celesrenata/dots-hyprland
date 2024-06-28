@@ -12,13 +12,13 @@ if ! [ -f ~/.local/share/initialSetup ]; then
   mkdir -p ~/.config/foot
   mkdir -p ~/.config/fuzzel
   mkdir -p ~/Videos
-  echo "monitor=,2560x1640X60,auto,1" > ~/.config/hypr/custom/custom.conf
-  swww img "$imgpath" --transition-step 100 --transition-fps 60 \
+fi
+sleep 5
+swww img "$imgpath" --transition-step 100 --transition-fps 60 \
 	 --transition-type grow --transition-angle 30 --transition-duration 2 \
 	 --transition-pos "$cursorposx, $cursorposy_inverted"
   ~/.config/ags/scripts/color_generation/colorgen.sh "${imgpath}" --apply --smart
-  if [ $? -eq 0 ]; then
-    touch ~/.local/share/initialSetup
-    reboot
-  fi
+if [ $? -eq 0 ]; then
+  touch ~/.local/share/initialSetup
+  reboot
 fi
