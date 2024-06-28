@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/nix/store/6klllvhvq5aawjbg02dsixg02f0v933r-bash-5.2p26/bin/bash
 
 if [ "$1" == "--noswitch" ]; then
     imgpath=$(swww query | head -1 | awk -F 'image: ' '{print $2}')

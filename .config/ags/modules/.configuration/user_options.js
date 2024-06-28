@@ -5,7 +5,7 @@ import userOverrides from '../../user_options.js';
 let configOptions = {
     // General stuff
     'ai': {
-        'defaultGPTProvider': "openai",
+        'defaultGPTProvider': "ollama",
         'defaultTemperature': 0.9,
         'enhancements': true,
         'useHistory': true,
@@ -87,7 +87,7 @@ let configOptions = {
         'shown': 10,
     },
     'dock': {
-        'enabled': false,
+        'enabled': true,
         'hiddenThickness': 5,
         'pinnedApps': ['firefox', 'org.gnome.Nautilus'],
         'layer': 'top',

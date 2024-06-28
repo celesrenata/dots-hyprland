@@ -5,7 +5,6 @@ import * as Utils from 'resource:///com/github/Aylur/ags/utils.js';
 const { execAsync, exec } = Utils;
 import { searchItem } from './searchitem.js';
 import { execAndClose, couldBeMath, launchCustomCommand } from './miscfunctions.js';
-import GeminiService from '../../services/gemini.js';
 
 export const DirectoryButton = ({ parentPath, name, type, icon }) => {
     const actionText = Widget.Revealer({
