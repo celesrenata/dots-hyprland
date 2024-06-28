@@ -20,5 +20,4 @@ swww img "$imgpath" --transition-step 100 --transition-fps 60 \
   ~/.config/ags/scripts/color_generation/colorgen.sh "${imgpath}" --apply --smart
 if [ $? -eq 0 ]; then
   touch ~/.local/share/initialSetup
-  reboot
 fi
