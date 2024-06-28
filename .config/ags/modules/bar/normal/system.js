@@ -99,8 +99,7 @@ const BarBattery = () => Box({
         Label({
             className: 'txt-smallie',
             setup: (self) => self.hook(Battery, label => {
-	        var batteryPercent = Number(Battery.percent).toLocaleString(undefined,{maximumFractionDigits:0});
-                label.label = `${batteryPercent}%`;
+                label.label = `${Battery.percent}%`;
             }),
         }),
         Overlay({
