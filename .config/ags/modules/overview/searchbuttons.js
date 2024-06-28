@@ -5,16 +5,6 @@ import * as Utils from 'resource:///com/github/Aylur/ags/utils.js';
 const { execAsync, exec } = Utils;
 import { searchItem } from './searchitem.js';
 import { execAndClose, couldBeMath, launchCustomCommand } from './miscfunctions.js';
-import GeminiService from '../../services/gemini.js';
-
-export const NoResultButton = () => searchItem({
-    materialIconName: 'Error',
-    name: "Search invalid",
-    content: "No results found!",
-    onActivate: () => {
-        App.closeWindow('overview');
-    },
-});
 
 export const DirectoryButton = ({ parentPath, name, type, icon }) => {
     const actionText = Widget.Revealer({
@@ -168,11 +158,7 @@ export const SearchButton = ({ text = '' }) => searchItem({
     content: `${text}`,
     onActivate: () => {
         App.closeWindow('overview');
-        let search = userOptions.search.engineBaseUrl + text;
-        for (let site of userOptions.search.excludedSites) {
-            if (site) search += ` -site:${site}`;
-        }
-        execAsync(['bash', '-c', `xdg-open '${search}' &`]).catch(print);
+        execAsync(['bash', '-c', `xdg-open '${userOptions.search.engineBaseUrl}${text} ${['', ...userOptions.search.excludedSites].join(' -site:')}' &`]).catch(print);
     },
 });
 
