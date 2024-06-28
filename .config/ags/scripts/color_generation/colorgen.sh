@@ -1,4 +1,4 @@
-#!/nix/store/6klllvhvq5aawjbg02dsixg02f0v933r-bash-5.2p26/bin/bash
+#!/usr/bin/env bash
 
 # check if no arguments
 if [ $# -eq 0 ]; then

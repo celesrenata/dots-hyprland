@@ -7,14 +7,37 @@ import Soup from 'gi://Soup?version=3.0';
 import { fileExists } from '../modules/.miscutils/files.js';
 
 const PROVIDERS = { // There's this list hmm https://github.com/zukixa/cool-ai-stuff/
-    'ollama': {
-        'name': 'Ollama',
-        'logo_name': 'ollama-symbolic',
-        'description': 'Official Ollama API.\nPricing: Free.',
-        'base_url': 'http://192.168.128.1:11434/v1/chat/completions',
-        'key_get_url': 'it\'s just ollama',
-        'key_file': 'ollama_key.txt',
-        'model': 'llama3:instruct',
+    'openai': {
+        'name': 'OpenAI',
+        'logo_name': 'openai-symbolic',
+        'description': 'Official OpenAI API.\nPricing: Free for the first $5 or 3 months, whichever is less.',
+        'base_url': 'https://api.openai.com/v1/chat/completions',
+        'key_get_url': 'https://platform.openai.com/api-keys',
+        'key_file': 'openai_key.txt',
+    },
+    'oxygen': {
+        'name': 'Oxygen',
+        'logo_name': 'ai-oxygen-symbolic',
+        'description': 'An API from Tornado Softwares\nPricing: Free: 100/day\nRequires you to join their Discord for a key',
+        'base_url': 'https://app.oxyapi.uk/v1/chat/completions',
+        'key_get_url': 'https://discord.com/invite/kM6MaCqGKA',
+        'key_file': 'oxygen_key.txt',
+    },
+    'zukijourney': {
+        'name': 'zukijourney',
+        'logo_name': 'ai-zukijourney',
+        'description': 'An API from @zukixa on GitHub.\nNote: Keys are IP-locked so it\'s buggy sometimes\nPricing: Free: 10/min, 800/day.\nRequires you to join their Discord for a key',
+        'base_url': 'https://zukijourney.xyzbot.net/v1/chat/completions',
+        'key_get_url': 'https://discord.com/invite/Y4J6XXnmQ6',
+        'key_file': 'zuki_key.txt',
+    },
+    'zukijourney_roleplay': {
+        'name': 'zukijourney (roleplay)',
+        'logo_name': 'ai-zukijourney',
+        'description': 'An API from @zukixa on GitHub.\nNote: Keys are IP-locked so it\'s buggy sometimes\nPricing: Free: 10/min, 800/day.\nRequires you to join their Discord for a key',
+        'base_url': 'https://zukijourney.xyzbot.net/unf/chat/completions',
+        'key_get_url': 'https://discord.com/invite/Y4J6XXnmQ6',
+        'key_file': 'zuki_key.txt',
     },
 }
 
@@ -36,7 +59,7 @@ const initMessages =
 // We're using many models to not be restricted to 3 messages per minute.
 // The whole chat will be sent every request anyway.
 Utils.exec(`mkdir -p ${GLib.get_user_cache_dir()}/ags/user/ai`);
-const CHAT_MODELS = ["codellama:13b-instruct", "llama3:instruct"]
+const CHAT_MODELS = ["gpt-3.5-turbo-1106", "gpt-3.5-turbo", "gpt-3.5-turbo-16k", "gpt-3.5-turbo-0613"]
 
 class GPTMessage extends Service {
     static {

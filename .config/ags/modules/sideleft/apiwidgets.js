@@ -6,7 +6,11 @@ const { execAsync, exec } = Utils;
 import { setupCursorHover, setupCursorHoverInfo } from '../.widgetutils/cursorhover.js';
 // APIs
 import GPTService from '../../services/gpt.js';
+import Gemini from '../../services/gemini.js';
+import { geminiView, geminiCommands, sendMessage as geminiSendMessage, geminiTabIcon } from './apis/gemini.js';
 import { chatGPTView, chatGPTCommands, sendMessage as chatGPTSendMessage, chatGPTTabIcon } from './apis/chatgpt.js';
+import { waifuView, waifuCommands, sendMessage as waifuSendMessage, waifuTabIcon } from './apis/waifu.js';
+import { booruView, booruCommands, sendMessage as booruSendMessage, booruTabIcon } from './apis/booru.js';
 import { enableClickthrough } from "../.widgetutils/clickthrough.js";
 import { checkKeybind } from '../.widgetutils/keybind.js';
 const TextView = Widget.subclass(Gtk.TextView, "AgsTextView");
@@ -17,12 +21,36 @@ import { IconTabContainer } from '../.commonwidgets/tabcontainer.js';
 const EXPAND_INPUT_THRESHOLD = 30;
 const APIS = [
     {
+        name: 'Assistant (Gemini Pro)',
+        sendCommand: geminiSendMessage,
+        contentWidget: geminiView,
+        commandBar: geminiCommands,
+        tabIcon: geminiTabIcon,
+        placeholderText: 'Message Gemini...',
+    },
+    {
         name: 'Assistant (GPTs)',
         sendCommand: chatGPTSendMessage,
         contentWidget: chatGPTView,
         commandBar: chatGPTCommands,
         tabIcon: chatGPTTabIcon,
         placeholderText: 'Message the model...',
+    },
+    {
+        name: 'Waifus',
+        sendCommand: waifuSendMessage,
+        contentWidget: waifuView,
+        commandBar: waifuCommands,
+        tabIcon: waifuTabIcon,
+        placeholderText: 'Enter tags',
+    },
+    {
+        name: 'Booru',
+        sendCommand: booruSendMessage,
+        contentWidget: booruView,
+        commandBar: booruCommands,
+        tabIcon: booruTabIcon,
+        placeholderText: 'Enter tags',
     },
 ];
 let currentApiId = 0;
@@ -55,6 +83,10 @@ export const chatEntry = TextView({
         .hook(GPTService, (self) => {
             if (APIS[currentApiId].name != 'Assistant (GPTs)') return;
             self.placeholderText = (GPTService.key.length > 0 ? 'Message the model...' : 'Enter API Key...');
+        }, 'hasKey')
+        .hook(Gemini, (self) => {
+            if (APIS[currentApiId].name != 'Assistant (Gemini Pro)') return;
+            self.placeholderText = (Gemini.key.length > 0 ? 'Message Gemini...' : 'Enter Google AI API Key...');
         }, 'hasKey')
         .on("key-press-event", (widget, event) => {
             // Don't send when Shift+Enter
