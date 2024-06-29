@@ -7,6 +7,7 @@ if ! [ -f ~/.local/share/initialSetup.1 ]; then
   mkdir -p ~/.local/share
   mkdir -p ~/.config/foot
   mkdir -p ~/.config/fuzzel
+  mkdir -p ~/.config/wofi
   mkdir -p ~/Videos
   touch ~/.local/share/initialSetup.1
 fi
