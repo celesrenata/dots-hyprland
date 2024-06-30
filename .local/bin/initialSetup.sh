@@ -10,7 +10,7 @@ if ! [ -f ~/.local/share/initialSetup.1 ]; then
   mkdir -p ~/.config/wofi
   mkdir -p ~/Videos
   touch ~/.local/share/initialSetup.1
-  sleep 10
+  reboot
 fi
 if ! [ -f ~/.local/share/initialSetup.2 ]; then
   imgpath=~/Backgrounds/love-is-love.jpg
