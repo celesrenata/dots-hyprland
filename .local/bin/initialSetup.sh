@@ -18,11 +18,15 @@ if ! [ -f ~/.local/share/initialSetup.2 ]; then
   cursorposy=$(hyprctl cursorpos -j | gojq '.y' 2>/dev/null) || cursorposy=540
   cursorposy_inverted=$(( screensizey - cursorposy ))
   sleep 5
+  chown 1000:100 -R ~/.config
+  chmod -R +w ~/.config
   swww img "$imgpath" --transition-step 100 --transition-fps 60 \
 	 --transition-type grow --transition-angle 30 --transition-duration 2 \
 	 --transition-pos "$cursorposx, $cursorposy_inverted"
   ~/.config/ags/scripts/color_generation/colorgen.sh "${imgpath}" --apply --smart
   if [ $? -eq 0 ]; then
     touch ~/.local/share/initialSetup.2
+    pkill ags
+    ags &
   fi
 fi
