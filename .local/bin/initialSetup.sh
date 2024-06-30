@@ -10,10 +10,9 @@ if ! [ -f ~/.local/share/initialSetup.1 ]; then
   mkdir -p ~/.config/wofi
   mkdir -p ~/Videos
   touch ~/.local/share/initialSetup.1
+  sleep 10
 fi
 if ! [ -f ~/.local/share/initialSetup.2 ]; then
-  chown 1000:100 -R ~/.config
-  chmod -R +w ~/.config
   imgpath=~/Backgrounds/love-is-love.jpg
   cursorposx=$(hyprctl cursorpos -j | gojq '.x' 2>/dev/null) || cursorposx=960
   cursorposy=$(hyprctl cursorpos -j | gojq '.y' 2>/dev/null) || cursorposy=540
