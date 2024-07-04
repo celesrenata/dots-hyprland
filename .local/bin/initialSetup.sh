@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/nix/store/6klllvhvq5aawjbg02dsixg02f0v933r-bash-5.2p26/bin/bash
 if ! [ -f ~/.local/share/initialSetup.1 ]; then
   cp -r ~/.configstaging ~/.config
   chown 1000:100 -R ~/.config
@@ -30,3 +30,7 @@ if ! [ -f ~/.local/share/initialSetup.2 ]; then
     ags &
   fi
 fi
+for IDE in $(find ~/.config/JetBrains/ -name "*.vmoptions"); do
+  if ! grep -q '\-Dawt.toolkit.name=WLToolkit' ${IDE}; then     echo '-Dawt.toolkit.name=WLToolkit' >> ${IDE}
+  fi
+done
