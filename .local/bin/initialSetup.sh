@@ -31,6 +31,8 @@ if ! [ -f ~/.local/share/initialSetup.2 ]; then
   fi
 fi
 for IDE in $(find ~/.config/JetBrains/ -name "*.vmoptions"); do
-  if ! grep -q '\-Dawt.toolkit.name=WLToolkit' ${IDE}; then     echo '-Dawt.toolkit.name=WLToolkit' >> ${IDE}
+  if ! grep -q '\-Dawt.toolkit.name=WLToolkit' ${IDE}; then
+    echo '' >> ${IDE}
+    echo '-Dawt.toolkit.name=WLToolkit' >> ${IDE}
   fi
 done
