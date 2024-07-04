@@ -87,7 +87,7 @@ let configOptions = {
         'shown': 10,
     },
     'dock': {
-        'enabled': false,
+        'enabled': true,
         'hiddenThickness': 5,
         'pinnedApps': ['firefox', 'org.gnome.Nautilus'],
         'layer': 'top',
