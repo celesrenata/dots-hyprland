@@ -94,10 +94,12 @@ export const keybindList = [[
             { "keys": ["󰘳", "Ctrl", "+", "H"], "action": "Launch terminal: Foot" },
             { "keys": ["󰘳", "Ctrl", "+", "B"], "action": "Launch browser: Firefox" },
 	    { "keys": ["󰘳", "Ctrl", "Shift", "+", "B"], "action": "Launch browser: Chromium" },
-            { "keys": ["󰘳", "Ctrl", "+", "C"], "action": "Launch editor: vscode" },
-            { "keys": ["󰘳", "Ctrl", "Shift", "+", "C"], "action": "Launch media: JetBrains ToolBox" },
+            { "keys": ["󰘳", "Ctrl", "+", "C"], "action": "Launch IDE: vscode" },
+            { "keys": ["󰘳", "Ctrl", "Shift", "+", "C"], "action": "Launch IDE: JetBrains ToolBox" },
             { "keys": ["󰘳", "Ctrl", "+", "X"], "action": "Launch editor: Sublime" },
-            { "keys": ["󰘳", "Ctrl", "+", "I"], "action": "Launch settings: GNOME Control center" }
+            { "keys": ["󰘳", "Ctrl", "+", "I"], "action": "Launch settings: GNOME Control center" },
+	    { "keys": ["󰘳", "Ctrl", "+", "J"], "action": "Launch File Manager: Thunar" },
+            { "keys": ["󰘳", "Ctrl", "Shift", "+", "J"], "action": "Launch File Manager: Nautilus" }
         ],
         "id": 6
     },
