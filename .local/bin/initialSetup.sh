@@ -26,6 +26,7 @@ if ! [ -f ~/.local/share/initialSetup.2 ]; then
   ~/.config/ags/scripts/color_generation/colorgen.sh "${imgpath}" --apply --smart
   if [ $? -eq 0 ]; then
     touch ~/.local/share/initialSetup.2
+    sleep 5
     pkill ags
     ags &
   fi
