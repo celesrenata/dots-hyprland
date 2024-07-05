@@ -1,11 +1,11 @@
-#!/usr/bin/env bash
+#!/nix/store/6klllvhvq5aawjbg02dsixg02f0v933r-bash-5.2p26/bin/bash
 
 if [ "$1" == "--noswitch" ]; then
     imgpath=$(swww query | head -1 | awk -F 'image: ' '{print $2}')
     # imgpath=$(ags run-js 'wallpaper.get(0)')
 else
     # Select and set image (hyprland)
-    cd "$HOME/Pictures"
+    cd "$HOME/Backgrounds"
     imgpath=$(yad --width 1200 --height 800 --file --title='Choose wallpaper' --add-preview --large-preview)
     screensizey=$(xrandr --current | grep '*' | uniq | awk '{print $1}' | cut -d 'x' -f2 | head -1)
     cursorposx=$(hyprctl cursorpos -j | gojq '.x' 2>/dev/null) || cursorposx=960
