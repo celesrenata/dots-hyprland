@@ -94,10 +94,8 @@ export const keybindList = [[
             { "keys": ["󰘳", "Ctrl", "+", "H"], "action": "Launch terminal: Foot" },
             { "keys": ["󰘳", "Ctrl", "+", "B"], "action": "Launch browser: Firefox" },
 	    { "keys": ["󰘳", "Ctrl", "Shift", "+", "B"], "action": "Launch browser: Chromium" },
-            { "keys": ["󰘳", "Ctrl", "+", "M"], "action": "Launch media: Kodi" },
-            { "keys": ["󰘳", "Ctrl", "Shift", "+", "M"], "action": "Launch media: Plex" },
-            { "keys": ["󰘳", "Ctrl", "⌥", "+", "M"], "action": "Launch media: JellyFin" },
             { "keys": ["󰘳", "Ctrl", "+", "C"], "action": "Launch editor: vscode" },
+            { "keys": ["󰘳", "Ctrl", "Shift", "+", "C"], "action": "Launch media: JetBrains ToolBox" },
             { "keys": ["󰘳", "Ctrl", "+", "X"], "action": "Launch editor: Sublime" },
             { "keys": ["󰘳", "Ctrl", "+", "I"], "action": "Launch settings: GNOME Control center" }
         ],
