@@ -100,6 +100,10 @@ export const keybindList = [[
             { "keys": ["󰘳", "Ctrl", "+", "I"], "action": "Launch settings: GNOME Control center" },
 	    { "keys": ["󰘳", "Ctrl", "+", "J"], "action": "Launch File Manager: Thunar" },
             { "keys": ["󰘳", "Ctrl", "Shift", "+", "J"], "action": "Launch File Manager: Nautilus" }
+            { "keys": ["󰘳", "Ctrl", "+", "M"], "action": "Launch Music: Tidal-Hifi" }
+            { "keys": ["󰘳", "Ctrl", "Shift", "+", "M"], "action": "Launch Music: Cider" }
+            { "keys": ["󰘳", "Ctrl", "󰘵", "Shift", "+", "M"], "action": "Launch Music: Spotify" }
+            { "keys": ["󰘳", "Ctrl", "+", "O"], "action": "Launch Social: Discord" }
         ],
         "id": 6
     },
