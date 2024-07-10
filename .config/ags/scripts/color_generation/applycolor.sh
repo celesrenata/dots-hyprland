@@ -1,4 +1,4 @@
-#!/nix/store/306znyj77fv49kwnkpxmb0j2znqpa8bj-bash-5.2p26/bin/bash
+#!/usr/bin/env bash
 
 # sleep 0 # idk i wanted some delay or colors dont get applied properly
 if [ ! -d "$HOME"/.cache/ags/user/generated ]; then
