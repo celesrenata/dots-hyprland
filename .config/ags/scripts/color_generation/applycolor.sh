@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/nix/store/306znyj77fv49kwnkpxmb0j2znqpa8bj-bash-5.2p26/bin/bash
 
 # sleep 0 # idk i wanted some delay or colors dont get applied properly
 if [ ! -d "$HOME"/.cache/ags/user/generated ]; then
@@ -16,12 +16,6 @@ colornames=''
 colorstrings=''
 colorlist=()
 colorvalues=()
-
-# wallpath=$(swww query | head -1 | awk -F 'image: ' '{print $2}')
-# wallpath_png="$HOME"'/.cache/ags/user/generated/hypr/lockscreen.png'
-# convert "$wallpath" "$wallpath_png"
-# wallpath_png=$(echo "$wallpath_png" | sed 's/\//\\\//g')
-# wallpath_png=$(sed 's/\//\\\\\//g' <<< "$wallpath_png")
 
 transparentize() {
   local hex="$1"
@@ -149,6 +143,11 @@ apply_hyprland() {
 }
 
 apply_hyprlock() {
+    set -x
+    wallpath=$(swww query | head -1 | awk -F 'image: ' '{print $2}')
+    wallpath_png="$HOME"'/.cache/ags/user/generated/hypr/lockscreen.png'
+    convert "$wallpath" "$wallpath_png"
+    wallpath_png=$(echo "$wallpath_png")
     # Check if scripts/templates/hypr/hyprlock.conf exists
     if [ ! -f "scripts/templates/hypr/hyprlock.conf" ]; then
         echo "Template file not found for hyprlock. Skipping that."
@@ -159,12 +158,13 @@ apply_hyprlock() {
     cp "scripts/templates/hypr/hyprlock.conf" "$HOME"/.cache/ags/user/generated/hypr/hyprlock.conf
     chmod +w "$HOME"/.cache/ags/user/generated/hypr/hyprlock.conf
     # Apply colors
-    # sed -i "s/{{ SWWW_WALL }}/${wallpath_png}/g" "$HOME"/.cache/ags/user/generated/hypr/hyprlock.conf
+    sed -i "s|{{ SWWW_WALL }}|$wallpath_png|g" "$HOME"/.cache/ags/user/generated/hypr/hyprlock.conf
     for i in "${!colorlist[@]}"; do
         sed -i "s/{{ ${colorlist[$i]} }}/${colorvalues[$i]#\#}/g" "$HOME"/.cache/ags/user/generated/hypr/hyprlock.conf
     done
 
     cp "$HOME"/.cache/ags/user/generated/hypr/hyprlock.conf "$HOME"/.config/hypr/hyprlock.conf
+    set +x
 }
 
 apply_gtk() { # Using gradience-cli
