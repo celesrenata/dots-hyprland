@@ -11,10 +11,19 @@ const PROVIDERS = { // There's this list hmm https://github.com/zukixa/cool-ai-s
         'name': 'Ollama',
         'logo_name': 'ollama-symbolic',
         'description': 'Official Ollama API.\nPricing: Free.',
-        'base_url': 'http://192.168.128.1:11434/v1/chat/completions',
+        'base_url': 'http://127.0.0.1:11434/v1/chat/completions',
         'key_get_url': 'it\'s just ollama',
         'key_file': 'ollama_key.txt',
         'model': 'llama3:instruct',
+    },
+    'codellama': {
+        'name': 'Codellama',
+        'logo_name': 'ollama-symbolic',
+        'description': 'Official Ollama API.\nPricing: Free.',
+        'base_url': 'http://127.0.0.1:11434/v1/chat/completions',
+        'key_get_url': 'it\'s just ollama',
+        'key_file': 'ollama_key.txt',
+        'model': 'codellama:7b-instruct',
     },
 }
 
