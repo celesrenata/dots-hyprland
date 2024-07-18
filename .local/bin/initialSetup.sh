@@ -24,9 +24,9 @@ if ! [ -f ~/.local/share/initialSetup.2 ]; then
 	 --transition-type grow --transition-angle 30 --transition-duration 2 \
 	 --transition-pos "$cursorposx, $cursorposy_inverted"
   ~/.config/ags/scripts/color_generation/colorgen.sh "${imgpath}" --apply --smart
-  ollama pull codellama:7b
-  ollama pull codellama:7b-instruct
-  ollama pull llama3:instruct
+  ollama pull codellama:7b &
+  ollama pull codellama:7b-instruct &
+  ollama pull llama3:instruct &
   if [ $? -eq 0 ]; then
     touch ~/.local/share/initialSetup.2
   fi
