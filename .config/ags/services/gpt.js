@@ -45,7 +45,7 @@ const initMessages =
 // We're using many models to not be restricted to 3 messages per minute.
 // The whole chat will be sent every request anyway.
 Utils.exec(`mkdir -p ${GLib.get_user_cache_dir()}/ags/user/ai`);
-const CHAT_MODELS = [ "llama3:instruct" "codellama:7b-instruct" ]
+const CHAT_MODELS = [ "llama3:instruct", "codellama:7b-instruct" ]
 
 class GPTMessage extends Service {
     static {
