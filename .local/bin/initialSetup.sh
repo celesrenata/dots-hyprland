@@ -10,6 +10,8 @@ if ! [ -f ~/.local/share/initialSetup.1 ]; then
   mkdir -p ~/.config/wofi
   mkdir -p ~/Videos
   touch ~/.local/share/initialSetup.1
+  ln -s /dev/dri/by-path/pci-0000:03:00.0-card ~/.config/hypr/card-amd
+  ln -s /dev/dri/by-path/pci-0000:00:02.0-card ~/.config/hypr/card-intel
   reboot
 fi
 if ! [ -f ~/.local/share/initialSetup.2 ]; then
