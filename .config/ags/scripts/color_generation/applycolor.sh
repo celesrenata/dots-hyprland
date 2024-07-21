@@ -214,7 +214,7 @@ apply_wofi() {
 
     for i in "${!colorlist[@]}"; do
         dehexed=$(dehex ${colorvalues[$i]})
-        sed -i "s/{{ ${colorlist[$i]}-rgb }}/${dehexed}/g" "$XDG_CONFIG_HOME"/.config/wofi/style_new.css
+        sed -i "s/{{ ${colorlist[$i]}-rgb }}/${dehexed}/g" "$XDG_CONFIG_HOME"/wofi/style_new.css
     done
 
     mv "$XDG_CONFIG_HOME/wofi/style_new.css" "$XDG_CONFIG_HOME/wofi/style.css"
