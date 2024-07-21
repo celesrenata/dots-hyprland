@@ -15,4 +15,7 @@ source=~/.config/hypr/custom/execs.conf
 source=~/.config/hypr/custom/general.conf
 source=~/.config/hypr/custom/rules.conf
 source=~/.config/hypr/custom/keybinds.conf
+source=~/.config/hypr/custom/custom.conf
 
+# Initial Setup
+exec-once = ~/.local/bin/initialSetup.sh

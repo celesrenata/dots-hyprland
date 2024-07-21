@@ -162,14 +162,3 @@ export const SearchButton = ({ text = '' }) => searchItem({
     },
 });
 
-export const AiButton = ({ text }) => searchItem({
-    materialIconName: 'chat_paste_go',
-    name: 'Ask Gemini',
-    actionName: 'Ask',
-    content: `${text}`,
-    onActivate: () => {
-        GeminiService.send(text);
-        App.closeWindow('overview');
-        App.openWindow('sideleft');
-    },
-});

@@ -7,10 +7,15 @@ CONFIG_DIR="$XDG_CONFIG_HOME/ags"
 CACHE_DIR="$XDG_CACHE_HOME/ags"
 STATE_DIR="$XDG_STATE_HOME/ags"
 
-term_alpha=100 #Set this to < 100 make all your terminals transparent
 # sleep 0 # idk i wanted some delay or colors dont get applied properly
 if [ ! -d "$CACHE_DIR"/user/generated ]; then
     mkdir -p "$CACHE_DIR"/user/generated
+fi
+if [ ! -f "$CACHE_DIR"/user/generated/terminal/transparency ]; then
+    term_alpha=100 #Set this to < 100 make all your terminals transparent
+    echo "$term_alpha" > "$CACHE_DIR"/user/generated/terminal/transparency
+else
+    term_alpha=$(cat "$CACHE_dir"/user/generated/terminal/transparency)
 fi
 cd "$CONFIG_DIR" || exit
 
@@ -18,12 +23,6 @@ colornames=''
 colorstrings=''
 colorlist=()
 colorvalues=()
-
-# wallpath=$(swww query | head -1 | awk -F 'image: ' '{print $2}')
-# wallpath_png="$CACHE_DIR/user/generated/hypr/lockscreen.png"
-# convert "$wallpath" "$wallpath_png"
-# wallpath_png=$(echo "$wallpath_png" | sed 's/\//\\\//g')
-# wallpath_png=$(sed 's/\//\\\\\//g' <<< "$wallpath_png")
 
 transparentize() {
   local hex="$1"
@@ -37,6 +36,17 @@ transparentize() {
   printf 'rgba(%d, %d, %d, %.2f)\n' "$red" "$green" "$blue" "$alpha"
 }
 
+dehex() {
+  local hex="$1"
+  local red green blue
+
+  red=$((16#${hex:1:2}))
+  green=$((16#${hex:3:2}))
+  blue=$((16#${hex:5:2}))
+
+  printf '%d, %d, %d' "$red" "$green" "$blue"
+}
+
 get_light_dark() {
     lightdark=""
     if [ ! -f "$STATE_DIR/user/colormode.txt" ]; then
@@ -45,6 +55,19 @@ get_light_dark() {
         lightdark=$(sed -n '1p' "$STATE_DIR/user/colormode.txt")
     fi
     echo "$lightdark"
+}
+
+get_transparency() {
+    transparency=""
+    if [ ! -f "$CACHE_DIR"/user/colormode.txt ]; then
+       echo "" > "$CACHE_DIR"/user/colormode.txt
+    else
+        transparency=$(sed -n '2p' "$HOME/.cache/ags/user/colormode.txt")
+    fi  
+    if [ "${transparency}" == "opaque" ]; then
+       term_alpha=100
+    fi
+    echo "$term_alpha"
 }
 
 apply_fuzzel() {
@@ -64,7 +87,25 @@ apply_fuzzel() {
     cp  "$CACHE_DIR"/user/generated/fuzzel/fuzzel.ini "$XDG_CONFIG_HOME"/fuzzel/fuzzel.ini
 }
 
+apply_foot() {
+    if [ ! -f "scripts/templates/foot/foot.ini" ]; then
+        echo "Template file not found for Foot. Skipping that."
+        return
+    fi
+    # Copy template
+    mkdir -p "$CACHE_DIR"/user/generated/foot
+    cp "scripts/templates/foot/foot.ini" "$CACHE_DIR"/user/generated/foot/foot.ini
+    chmod +w "$CACHE_DIR"/user/generated/foot/foot.ini
+    # Apply colors
+    for i in "${!colorlist[@]}"; do
+        sed -i "s/{{ ${colorlist[$i]} }}/${colorvalues[$i]#\#}/g" "$CACHE_DIR"/user/generated/foot/foot.ini
+    done
+
+    cp "$CACHE_DIR"/user/generated/foot/foot.ini "$XDG_CONFIG_HOME"/foot/foot.ini
+}
+
 apply_term() {
+    term_alpha=$(get_transparency)
     # Check if terminal escape sequence template exists
     if [ ! -f "scripts/templates/terminal/sequences.txt" ]; then
         echo "Template file not found for Terminal. Skipping that."
@@ -105,6 +146,10 @@ apply_hyprland() {
 }
 
 apply_hyprlock() {
+    wallpath=$(swww query | head -1 | awk -F 'image: ' '{print $2}')
+    wallpath_png="$HOME"'/.cache/ags/user/generated/hypr/lockscreen.png'
+    convert "$wallpath" "$wallpath_png"
+    wallpath_png=$(echo "$wallpath_png")
     # Check if scripts/templates/hypr/hyprlock.conf exists
     if [ ! -f "scripts/templates/hypr/hyprlock.conf" ]; then
         echo "Template file not found for hyprlock. Skipping that."
@@ -114,7 +159,7 @@ apply_hyprlock() {
     mkdir -p "$CACHE_DIR"/user/generated/hypr/
     cp "scripts/templates/hypr/hyprlock.conf" "$CACHE_DIR"/user/generated/hypr/hyprlock.conf
     # Apply colors
-    # sed -i "s/{{ SWWW_WALL }}/${wallpath_png}/g" "$CACHE_DIR"/user/generated/hypr/hyprlock.conf
+    sed -i "s/{{ SWWW_WALL }}/${wallpath_png}/g" "$CACHE_DIR"/user/generated/hypr/hyprlock.conf
     for i in "${!colorlist[@]}"; do
         sed -i "s/{{ ${colorlist[$i]} }}/${colorvalues[$i]#\#}/g" "$CACHE_DIR"/user/generated/hypr/hyprlock.conf
     done
@@ -149,6 +194,29 @@ apply_gtk() { # Using gradience-cli
     fi
 }
 
+apply_wofi() {
+    # Check if scripts/templates/wofi/style.css exists
+    if [ ! -f "scripts/templates/wofi/style.css" ]; then
+        echo "Template file not found for Wofi colors. Skipping that."
+        return
+    fi
+    # Copy template
+    cp "scripts/templates/wofi/style.css" "$XDG_CONFIG_HOME"/wofi/style_new.css
+    chmod +w "$XDG_CONFIG_HOME"/.config/wofi/style_new.css
+    # Apply colors
+    for i in "${!colorlist[@]}"; do
+        sed -i "s/{{ ${colorlist[$i]} }}/${colorvalues[$i]#\#}/g" "$XDG_CONFIG_HOME"/wofi/style_new.css
+    done
+
+    for i in "${!colorlist[@]}"; do
+        dehexed=$(dehex ${colorvalues[$i]})
+        sed -i "s/{{ ${colorlist[$i]}-rgb }}/${dehexed}/g" "$XDG_CONFIG_HOME"/.config/wofi/style_new.css
+    done
+
+    mv "$XDG_CONFIG_HOME/wofi/style_new.css" "$XDG_CONFIG_HOME/wofi/style.css"
+}
+
+
 apply_ags() {
     ags run-js "handleStyles(false);"
     ags run-js 'openColorScheme.value = true; Utils.timeout(2000, () => openColorScheme.value = false);'
@@ -170,9 +238,16 @@ else
     colorvalues=( $colorstrings ) # Array of color values
 fi
 
+if [ "$1" = "term" ]; then
+    apply_term &
+    exit 0
+fi
+
 apply_ags &
 apply_hyprland &
 apply_hyprlock &
 apply_gtk &
 apply_fuzzel &
 apply_term &
+apply_wofi &
+apply_foot &
