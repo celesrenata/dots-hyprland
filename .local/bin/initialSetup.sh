@@ -3,7 +3,7 @@ if ! [ -f ~/.local/share/initialSetup.1 ]; then
   cp -r ~/.configstaging ~/.config
   chown 1000:100 -R ~/.config
   chmod -R +w ~/.config
-  rsync -azL --no-perms ~/.configstaging/ ~/.config 2> /dev/null --exclude='*.bak'
+  rsync -azL --exclude='*.bak' --no-perms ~/.configstaging/ ~/.config 2> /dev/null
   mkdir -p ~/.local/share
   mkdir -p ~/.config/foot
   mkdir -p ~/.config/fuzzel
