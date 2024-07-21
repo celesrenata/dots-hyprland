@@ -15,7 +15,7 @@ if [ ! -f "$CACHE_DIR"/user/generated/terminal/transparency ]; then
     term_alpha=100 #Set this to < 100 make all your terminals transparent
     echo "$term_alpha" > "$CACHE_DIR"/user/generated/terminal/transparency
 else
-    term_alpha=$(cat "$CACHE_dir"/user/generated/terminal/transparency)
+    term_alpha=$(cat "$CACHE_DIR"/user/generated/terminal/transparency)
 fi
 cd "$CONFIG_DIR" || exit
 
@@ -202,7 +202,7 @@ apply_wofi() {
     fi
     # Copy template
     cp "scripts/templates/wofi/style.css" "$XDG_CONFIG_HOME"/wofi/style_new.css
-    chmod +w "$XDG_CONFIG_HOME"/.config/wofi/style_new.css
+    chmod +w "$XDG_CONFIG_HOME"/wofi/style_new.css
     # Apply colors
     for i in "${!colorlist[@]}"; do
         sed -i "s/{{ ${colorlist[$i]} }}/${colorvalues[$i]#\#}/g" "$XDG_CONFIG_HOME"/wofi/style_new.css
