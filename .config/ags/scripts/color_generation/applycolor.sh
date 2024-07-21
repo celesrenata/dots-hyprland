@@ -62,7 +62,7 @@ get_transparency() {
     if [ ! -f "$CACHE_DIR"/user/colormode.txt ]; then
        echo "" > "$CACHE_DIR"/user/colormode.txt
     else
-        transparency=$(sed -n '2p' "$HOME/.cache/ags/user/colormode.txt")
+        transparency=$(sed -n '2p' "$CACHE_DIR/user/colormode.txt")
     fi  
     if [ "${transparency}" == "opaque" ]; then
        term_alpha=100
@@ -79,6 +79,8 @@ apply_fuzzel() {
     # Copy template
     mkdir -p "$CACHE_DIR"/user/generated/fuzzel
     cp "scripts/templates/fuzzel/fuzzel.ini" "$CACHE_DIR"/user/generated/fuzzel/fuzzel.ini
+    chmod +w "$CACHE_DIR"/user/generated/fuzzel/fuzzel.ini
+
     # Apply colors
     for i in "${!colorlist[@]}"; do
         sed -i "s/{{ ${colorlist[$i]} }}/${colorvalues[$i]#\#}/g" "$CACHE_DIR"/user/generated/fuzzel/fuzzel.ini
@@ -158,8 +160,9 @@ apply_hyprlock() {
     # Copy template
     mkdir -p "$CACHE_DIR"/user/generated/hypr/
     cp "scripts/templates/hypr/hyprlock.conf" "$CACHE_DIR"/user/generated/hypr/hyprlock.conf
+    chmod +w "$CACHE_DIR"/user/generated/hypr/hyprlock.conf
     # Apply colors
-    sed -i "s/{{ SWWW_WALL }}/${wallpath_png}/g" "$CACHE_DIR"/user/generated/hypr/hyprlock.conf
+    sed -i "s|{{ SWWW_WALL }}|$wallpath_png|g" "$CACHE_DIR"/user/generated/hypr/hyprlock.conf
     for i in "${!colorlist[@]}"; do
         sed -i "s/{{ ${colorlist[$i]} }}/${colorvalues[$i]#\#}/g" "$CACHE_DIR"/user/generated/hypr/hyprlock.conf
     done
@@ -173,6 +176,7 @@ apply_gtk() { # Using gradience-cli
     # Copy template
     mkdir -p "$CACHE_DIR"/user/generated/gradience
     cp "scripts/templates/gradience/preset.json" "$CACHE_DIR"/user/generated/gradience/preset.json
+    chmod +w  "$CACHE_DIR"/user/generated/gradience/preset.json
 
     # Apply colors
     for i in "${!colorlist[@]}"; do
