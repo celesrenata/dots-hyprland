@@ -1,4 +1,4 @@
-#!/nix/store/5jw69mbaj5dg4l2bj58acg3gxywfszpj-bash-5.2p26/bin/bash
+#!/usr/bin/env bash
 if ! [ -f ~/.local/share/initialSetup.1 ]; then
   cp -r ~/.configstaging ~/.config
   chown 1000:100 -R ~/.config
