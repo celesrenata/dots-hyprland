@@ -8,7 +8,7 @@ const { execAsync, exec } = Utils;
 import { execAndClose, expandTilde, hasUnterminatedBackslash, couldBeMath, launchCustomCommand, ls } from './miscfunctions.js';
 import {
     CalculationResultButton, CustomCommandButton, DirectoryButton,
-    DesktopEntryButton, ExecuteCommandButton, SearchButton, AiButton
+    DesktopEntryButton, ExecuteCommandButton, SearchButton
 } from './searchbuttons.js';
 import { checkKeybind } from '../.widgetutils/keybind.js';
 
@@ -133,7 +133,6 @@ export const SearchAndWindows = () => {
             }
 
             else {
-                GeminiService.send(text);
                 App.closeWindow('overview');
                 App.openWindow('sideleft');
             }
@@ -194,7 +193,6 @@ export const SearchAndWindows = () => {
             }
 
             // Add fallback: search
-            resultsBox.add(AiButton({ text: entry.text }));
             resultsBox.add(SearchButton({ text: entry.text }));
             resultsBox.show_all();
         },
