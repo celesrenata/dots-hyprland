@@ -59,10 +59,10 @@ get_light_dark() {
 
 get_transparency() {
     transparency=""
-    if [ ! -f "$CACHE_DIR"/user/colormode.txt ]; then
-       echo "" > "$CACHE_DIR"/user/colormode.txt
+    if [ ! -f "$STATE_DIR"/user/colormode.txt ]; then
+       echo "" > "$STATE_DIR"/user/colormode.txt
     else
-        transparency=$(sed -n '2p' "$CACHE_DIR/user/colormode.txt")
+        transparency=$(sed -n '2p' "$STATE_DIR/user/colormode.txt")
     fi  
     if [ "${transparency}" == "opaque" ]; then
        term_alpha=100
