@@ -1,0 +1,43 @@
+    // Replace the m3colors QtObject with a flexible JavaScript object
+    property var m3colors: ({
+        // Default values that can be overridden
+        darkmode: false,
+        transparent: false,
+        
+        // Default Material You colors (will be overridden by MaterialThemeLoader)
+        m3background: "#161217",
+        m3onBackground: "#EAE0E7",
+        m3surface: "#161217",
+        m3primary: "#E5B6F2",
+        m3onPrimary: "#452152",
+        m3secondary: "#D5C0D7",
+        m3onSecondary: "#392C3D",
+        m3tertiary: "#F5B7B3",
+        m3onTertiary: "#4C2523",
+        m3error: "#FFB4AB",
+        m3onError: "#690005",
+        m3outline: "#988E97",
+        m3outlineVariant: "#4C444D",
+        m3shadow: "#000000",
+        m3scrim: "#000000",
+        m3surfaceTint: "#E5B6F2",
+        m3surfaceContainer: "#231E23",
+        m3surfaceContainerHigh: "#2D282E",
+        m3surfaceContainerHighest: "#383339",
+        m3surfaceContainerLow: "#1F1A1F",
+        m3surfaceContainerLowest: "#110D12",
+        m3onSurface: "#EAE0E7",
+        m3onSurfaceVariant: "#CFC3CD",
+        m3surfaceVariant: "#4C444D",
+        m3inverseSurface: "#EAE0E7",
+        m3inverseOnSurface: "#342F34",
+        m3inversePrimary: "#775084",
+        m3primaryContainer: "#5D386A",
+        m3onPrimaryContainer: "#F9D8FF",
+        m3secondaryContainer: "#534457",
+        m3onSecondaryContainer: "#F2DCF3",
+        m3tertiaryContainer: "#BA837F",
+        m3onTertiaryContainer: "#000000",
+        m3errorContainer: "#93000A",
+        m3onErrorContainer: "#FFDAD6"
+    })

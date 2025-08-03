@@ -88,10 +88,10 @@ in
       import QtQuick.Layouts
       import QtQuick.Window
       import Quickshell
-      import "./services/"
 
       ShellRoot {
           // Module enable flags
+          property bool enableBackground: true
           property bool enableBar: ${lib.boolToString cfg.modules.bar}
           property bool enableOverview: ${lib.boolToString cfg.modules.overview}
           property bool enableSidebarLeft: ${lib.boolToString cfg.modules.sidebarLeft}
@@ -106,6 +106,25 @@ in
           property bool enableOnScreenKeyboard: ${lib.boolToString cfg.modules.onScreenKeyboard}
           property bool enableSession: ${lib.boolToString cfg.modules.session}
           property bool enableLock: ${lib.boolToString cfg.modules.lock}
+          property bool enableReloadPopup: true
+
+          // LazyLoaders for all modules - matching original dots-hyprland structure
+          LazyLoader { active: enableBackground; component: Background {} }
+          LazyLoader { active: enableBar; component: Bar {} }
+          LazyLoader { active: enableCheatsheet; component: Cheatsheet {} }
+          LazyLoader { active: enableDock; component: Dock {} }
+          LazyLoader { active: enableLock; component: Lock {} }
+          LazyLoader { active: enableMediaControls; component: MediaControls {} }
+          LazyLoader { active: enableNotificationPopup; component: NotificationPopup {} }
+          LazyLoader { active: enableOnScreenDisplayBrightness; component: OnScreenDisplayBrightness {} }
+          LazyLoader { active: enableOnScreenDisplayVolume; component: OnScreenDisplayVolume {} }
+          LazyLoader { active: enableOnScreenKeyboard; component: OnScreenKeyboard {} }
+          LazyLoader { active: enableOverview; component: Overview {} }
+          LazyLoader { active: enableReloadPopup; component: ReloadPopup {} }
+          LazyLoader { active: enableScreenCorners; component: ScreenCorners {} }
+          LazyLoader { active: enableSession; component: Session {} }
+          LazyLoader { active: enableSidebarLeft; component: SidebarLeft {} }
+          LazyLoader { active: enableSidebarRight; component: SidebarRight {} }
 
           // Configuration properties
           property real scaling: ${toString cfg.scaling}
