@@ -92,27 +92,28 @@
             home.homeDirectory = "/home/user";
             home.stateVersion = "24.05";
             
-            # Enable dots-hyprland with Phase 4 advanced features
+            # Enable dots-hyprland with Phase 3 advanced features
             programs.dots-hyprland = {
               enable = true;
               style = "illogical-impulse";
               
-              # Phase 4: Advanced Features (testing without AI first)
+              # Phase 3: Advanced Features (AI enabled!)
               components = {
                 hyprland = true;
                 quickshell = true;
                 theming = true;   # ✅ ENABLED: Material You theming
-                ai = false;       # Phase 4: AI integration (testing)
+                ai = true;        # ✅ ENABLED: AI integration (Gemini/Ollama)
                 audio = true;
+                development = false;
               };
               
-              # Phase 4: Advanced features
+              # Phase 3: Advanced features
               features = {
                 overview = true;
-                sidebar = true;        # Phase 4: Advanced sidebars
+                sidebar = true;        # Phase 3: Advanced sidebars
                 notifications = true;
                 mediaControls = true;
-                screenCorners = true;  # Phase 4: Screen corner interactions
+                screenCorners = true;  # Phase 3: Screen corner interactions
                 onScreenKeyboard = false;
                 cheatsheet = true;
               };
@@ -120,6 +121,20 @@
               keybinds = {
                 modifier = "SUPER";
                 terminal = "foot";
+              };
+              
+              # Phase 3: AI Configuration
+              ai = {
+                providers = {
+                  gemini = {
+                    enable = false;  # Requires API key
+                  };
+                  ollama = {
+                    enable = true;   # Local AI - no API key needed
+                    endpoint = "http://localhost:11434";
+                    models = [ "llama2" "codellama" ];
+                  };
+                };
               };
             };
           }

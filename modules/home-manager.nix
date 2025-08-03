@@ -6,14 +6,14 @@ let
   cfg = config.programs.dots-hyprland;
 in
 {
-  # Import core components for Phase 5 testing
+  # Import core components for Phase 3 Advanced Features
   imports = [
     ./components/packages.nix
     ./components/hyprland-config.nix  # Actual Hyprland configuration
     ./components/material-you-theming.nix  # Material You theming system
     ./components/quickshell-widgets.nix  # Complete Quickshell widget system
-    ./components/session-management.nix  # NEW: Proper session management
-    # ./components/ai.nix  # Temporarily disabled for testing
+    ./components/session-management.nix  # Proper session management
+    ./components/ai.nix  # ✅ ENABLED: AI integration (Phase 3)
     # ./components/customization.nix  # Temporarily disabled for testing
   ];
 
@@ -108,12 +108,35 @@ in
       DOTS_HYPRLAND_STYLE = cfg.style;
     };
 
-    # Enable core components for Phase 5 testing
+    # Enable core components for Phase 3 Advanced Features
     programs.dots-hyprland.packages.enable = true;
     programs.dots-hyprland.hyprland.enable = mkIf cfg.components.hyprland true;
-    programs.dots-hyprland.quickshell.enable = mkIf cfg.components.quickshell true;
+    programs.dots-hyprland.quickshell = mkIf cfg.components.quickshell {
+      enable = true;
+      
+      # Configure Quickshell modules based on features
+      modules = {
+        bar = true;
+        overview = mkIf cfg.features.overview true;
+        sidebarLeft = mkIf cfg.features.sidebar true;
+        sidebarRight = mkIf cfg.features.sidebar true;
+        notificationPopup = mkIf cfg.features.notifications true;
+        mediaControls = mkIf cfg.features.mediaControls true;
+        cheatsheet = mkIf cfg.features.cheatsheet true;
+        screenCorners = mkIf cfg.features.screenCorners true;
+        onScreenKeyboard = mkIf cfg.features.onScreenKeyboard true;
+        
+        # Advanced features (Phase 3)
+        background = false;  # Can be enabled later
+        dock = false;        # Can be enabled later
+        lock = false;        # Can be enabled later
+        session = false;     # Can be enabled later
+        onScreenDisplay = true;  # Volume/brightness OSD
+      };
+    };
     programs.dots-hyprland.theming.enable = mkIf cfg.components.theming true;
     programs.dots-hyprland.session.enable = mkIf cfg.enable true;  # Session management
+    programs.dots-hyprland.ai.enable = mkIf cfg.components.ai true;  # AI integration (Phase 3)
     # programs.dots-hyprland.ai.enable = mkIf cfg.components.ai true;  # Temporarily disabled
     # programs.dots-hyprland.customization.enable = mkIf cfg.enable true;  # Temporarily disabled
     

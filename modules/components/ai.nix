@@ -110,10 +110,10 @@ in
       ollama
     ];
 
-    # Hyprland keybind for AI
-    programs.dots-hyprland.hyprland.customConfig = mkIf (cfg.ui.keybind != null) ''
-      bind = ${cfg.ui.keybind}, exec, quickshell -c ai-chat
-    '';
+    # Hyprland keybind for AI (temporarily disabled - needs customConfig option)
+    # programs.dots-hyprland.hyprland.customConfig = mkIf (cfg.ui.keybind != null) ''
+    #   bind = ${cfg.ui.keybind}, exec, quickshell -c ai-chat
+    # '';
 
     # AI helper scripts
     home.file."${mainCfg.dataDir}/bin/ai-chat" = {
