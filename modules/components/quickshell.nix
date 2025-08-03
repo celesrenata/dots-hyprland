@@ -64,7 +64,7 @@ in
     ];
 
     # Generate main shell.qml configuration
-    xdg.configFile."quickshell/ii/shell.qml".text = ''
+    home.file.".config/quickshell/ii/shell.qml".text = ''
       //@ pragma UseQApplication
       //@ pragma Env QS_NO_RELOAD_POPUP=1
       //@ pragma Env QT_QUICK_CONTROLS_STYLE=Basic
@@ -120,7 +120,7 @@ in
     '';
 
     # Generate settings.qml configuration
-    xdg.configFile."quickshell/ii/settings.qml".text = ''
+    home.file.".config/quickshell/ii/settings.qml".text = ''
       import QtQuick
       import QtQuick.Controls
       import QtQuick.Layouts
@@ -214,18 +214,18 @@ in
     '';
 
     # Copy Quickshell configuration templates (will be created in next steps)
-    xdg.configFile."quickshell/ii/modules" = {
+    home.file.".config/quickshell/ii/modules" = {
       source = ../../configs/quickshell/ii/modules;
       recursive = true;
     };
 
-    xdg.configFile."quickshell/ii/services" = {
+    home.file.".config/quickshell/ii/services" = {
       source = ../../configs/quickshell/ii/services;
       recursive = true;
     };
 
     # Language configuration
-    xdg.configFile."quickshell/translations/${cfg.language}.json" = {
+    home.file.".config/quickshell/translations/${cfg.language}.json" = {
       source = ../../configs/quickshell/translations + "/${cfg.language}.json";
     };
 

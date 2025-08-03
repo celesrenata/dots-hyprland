@@ -334,41 +334,41 @@ in
 
   config = mkIf cfg.enable {
     # Install essential scripts to ~/.config/hypr/scripts/
-    xdg.configFile = {
-      "hypr/scripts/fuzzel-emoji.sh" = {
+    home.file = {
+      ".config/hypr/scripts/fuzzel-emoji.sh" = {
         source = ../../scripts/fuzzel-emoji.sh;
         executable = true;
       };
-      "hypr/scripts/record.sh" = {
+      ".config/hypr/scripts/record.sh" = {
         source = ../../scripts/record.sh;
         executable = true;
       };
-      "hypr/scripts/zoom.sh" = {
+      ".config/hypr/scripts/zoom.sh" = {
         source = ../../scripts/zoom.sh;
         executable = true;
       };
       
       # wlogout session menu configuration
-      "wlogout/layout".source = ../../configs/matugen/templates/wlogout/layout;
+      ".config/wlogout/layout".source = ../../configs/matugen/templates/wlogout/layout;
       
       # hypridle configuration for automatic screen locking
-      "hypr/hypridle.conf".source = ../../configs/hypr/hypridle.conf.template;
+      ".config/hypr/hypridle.conf".source = ../../configs/hypr/hypridle.conf.template;
       
       # Hyprland configuration files
-      "hypr/hyprland.conf".text = processTemplate (builtins.readFile ../../configs/hypr/hyprland.conf.template) templateVars;
-      "hypr/env.conf".text = processTemplate (builtins.readFile ../../configs/hypr/env.conf.template) templateVars;
-      "hypr/execs.conf".text = processTemplate (builtins.readFile ../../configs/hypr/execs.conf.template) templateVars;
-      "hypr/general.conf".text = processTemplate (builtins.readFile ../../configs/hypr/general.conf.template) templateVars;
-      "hypr/keybinds.conf".text = processTemplate (builtins.readFile ../../configs/hypr/keybinds.conf.template) templateVars;
-      "hypr/colors.conf".text = processTemplate (builtins.readFile ../../configs/hypr/colors.conf.template) templateVars;
-      "hypr/rules.conf".text = processTemplate (builtins.readFile ../../configs/hypr/rules.conf.template) templateVars;
+      ".config/hypr/hyprland.conf".text = processTemplate (builtins.readFile ../../configs/hypr/hyprland.conf.template) templateVars;
+      ".config/hypr/env.conf".text = processTemplate (builtins.readFile ../../configs/hypr/env.conf.template) templateVars;
+      ".config/hypr/execs.conf".text = processTemplate (builtins.readFile ../../configs/hypr/execs.conf.template) templateVars;
+      ".config/hypr/general.conf".text = processTemplate (builtins.readFile ../../configs/hypr/general.conf.template) templateVars;
+      ".config/hypr/keybinds.conf".text = processTemplate (builtins.readFile ../../configs/hypr/keybinds.conf.template) templateVars;
+      ".config/hypr/colors.conf".text = processTemplate (builtins.readFile ../../configs/hypr/colors.conf.template) templateVars;
+      ".config/hypr/rules.conf".text = processTemplate (builtins.readFile ../../configs/hypr/rules.conf.template) templateVars;
       
       # Scripts
-      "hypr/scripts/launch_first_available.sh" = {
+      ".config/hypr/scripts/launch_first_available.sh" = {
         source = ../../configs/hypr/scripts/launch_first_available.sh;
         executable = true;
       };
-      "hypr/scripts/workspace_action.sh" = {
+      ".config/hypr/scripts/workspace_action.sh" = {
         source = ../../configs/hypr/scripts/workspace_action.sh;
         executable = true;
       };

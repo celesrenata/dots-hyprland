@@ -141,6 +141,65 @@
         ];
       };
 
+      # Configuration for current user (celes)
+      homeConfigurations.celes = home-manager.lib.homeManagerConfiguration {
+        inherit pkgs;
+        modules = [
+          self.homeManagerModules.default
+          {
+            home.username = "celes";
+            home.homeDirectory = "/home/celes";
+            home.stateVersion = "24.05";
+            
+            # Enable dots-hyprland with Phase 3 advanced features
+            programs.dots-hyprland = {
+              enable = true;
+              style = "illogical-impulse";
+              
+              # Phase 3: Advanced Features (AI enabled!)
+              components = {
+                hyprland = true;
+                quickshell = false;  # Temporarily disable to test
+                theming = false;     # Temporarily disable to test
+                ai = false;          # Temporarily disable to test
+                audio = true;
+                development = false;
+              };
+              
+              # Phase 3: Advanced features
+              features = {
+                overview = true;
+                sidebar = true;        # Phase 3: Advanced sidebars
+                notifications = true;
+                mediaControls = true;
+                screenCorners = true;  # Phase 3: Screen corner interactions
+                onScreenKeyboard = false;
+                cheatsheet = true;
+              };
+              
+              keybinds = {
+                modifier = "SUPER";
+                terminal = "foot";
+              };
+              
+              # Phase 3: AI Configuration
+              ai = {
+                providers = {
+                  gemini = {
+                    enable = false;  # Requires API key
+                  };
+                  ollama = {
+                    enable = true;   # Local AI - no API key needed
+                    endpoint = "http://localhost:11434";
+                    models = [ "llama2" "codellama" ];
+                  };
+                };
+              };
+            };
+          }
+        ];
+      };
+
       # NixOS configurations for testing
       nixosConfigurations = {
         basic-test = nixpkgs.lib.nixosSystem {

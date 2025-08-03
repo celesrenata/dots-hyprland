@@ -85,15 +85,15 @@ in
     };
 
     # AI configuration for Quickshell
-    xdg.configFile."quickshell/ii/defaults/ai/config.json".text = builtins.toJSON {
+    home.file.".config/quickshell/ii/defaults/ai/config.json".text = builtins.toJSON {
       providers = {
-        gemini = mkIf cfg.providers.gemini.enable {
-          enabled = true;
+        gemini = {
+          enabled = cfg.providers.gemini.enable;
           model = cfg.providers.gemini.model;
           apiKeyFile = cfg.providers.gemini.apiKeyFile;
         };
-        ollama = mkIf cfg.providers.ollama.enable {
-          enabled = true;
+        ollama = {
+          enabled = cfg.providers.ollama.enable;
           endpoint = cfg.providers.ollama.endpoint;
           models = cfg.providers.ollama.models;
         };

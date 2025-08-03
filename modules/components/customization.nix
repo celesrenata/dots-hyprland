@@ -229,8 +229,8 @@ in
 
   config = mkIf cfg.enable {
     # Apply custom configurations and create configuration files
-    xdg.configFile = lib.mapAttrs' (name: value:
-      lib.nameValuePair name (
+    home.file = lib.mapAttrs' (name: value:
+      lib.nameValuePair (".config/" + name) (
         if builtins.isPath value then
           { source = value; }
         else
@@ -305,7 +305,7 @@ in
       };
 
     # Create customization configuration file
-    xdg.configFile."dots-hyprland/customization.json".text = builtins.toJSON {
+    home.file.".config/dots-hyprland/customization.json".text = builtins.toJSON {
       templateOverrides = cfg.templateOverrides;
       keybindOverrides = cfg.keybindOverrides;
       widgets = cfg.widgets;
@@ -320,7 +320,7 @@ in
     );
 
     # Widget configuration integration
-    xdg.configFile."quickshell/ii/config/widgets.json".text = builtins.toJSON cfg.widgets;
+    home.file.".config/quickshell/ii/config/widgets.json".text = builtins.toJSON cfg.widgets;
 
       # Customization helper script
       "${mainCfg.dataDir}/bin/customize" = {

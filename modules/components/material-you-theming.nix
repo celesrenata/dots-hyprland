@@ -94,8 +94,7 @@ let
       --mode "$MODE" \
       --type scheme-content \
       --contrast ${toString cfg.contrast} \
-      --config "$CONFIG_FILE" \
-      --dry-run false
+      --config "$CONFIG_FILE"
 
     # Store wallpaper path for reference
     echo "$WALLPAPER" > "$DATA_DIR/generated/wallpaper/path.txt"
