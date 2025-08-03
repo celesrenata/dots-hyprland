@@ -6,7 +6,10 @@
   # Minimal configuration for resource-constrained testing
   virtualisation = {
     memorySize = 2048;  # Reduced memory
-    cores = 2;          # Reduced cores
+    # cores = 2;        # This option doesn't exist in NixOS
+    qemu.options = [
+      "-smp 2"  # Set CPU cores this way
+    ];
   };
 
   # Minimal dots-hyprland configuration

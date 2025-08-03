@@ -6,11 +6,12 @@
   # VM-specific configuration
   virtualisation = {
     memorySize = 4096;
-    cores = 4;
+    # cores = 4;  # This option doesn't exist in NixOS
     qemu.options = [
       "-vga virtio"
       "-display gtk,gl=on"
       "-device virtio-gpu-pci"
+      "-smp 4"  # Set CPU cores this way
     ];
     # Enable KVM if available
     qemu.package = pkgs.qemu_kvm;

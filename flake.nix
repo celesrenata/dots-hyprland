@@ -36,8 +36,8 @@
         # Custom scripts package
         scripts = pkgs.callPackage ./packages/scripts { };
         
-        # Material color utilities
-        material-color-utilities = pkgs.callPackage ./packages/material-color-utilities { };
+        # Material color utilities (disabled for now - needs proper hash)
+        # material-color-utilities = pkgs.callPackage ./packages/material-color-utilities { };
         
         # Default package points to scripts
         default = self.packages.${system}.scripts;
@@ -46,6 +46,10 @@
       # Home Manager module
       homeManagerModules.default = import ./modules/home-manager.nix;
       homeManagerModules.dots-hyprland = self.homeManagerModules.default;
+
+      # NixOS module
+      nixosModules.default = import ./modules/nixos-system.nix;
+      nixosModules.dots-hyprland = self.nixosModules.default;
 
       # Development shell
       devShells.${system}.default = pkgs.mkShell {
@@ -128,26 +132,7 @@
           inherit system;
           modules = [
             self.nixosModules.default
-            ./testing/vm-configs/basic-test.nix
-            home-manager.nixosModules.home-manager
-          ];
-        };
-        
-        nvidia-test = nixpkgs.lib.nixosSystem {
-          inherit system;
-          modules = [
-            self.nixosModules.default
-            ./testing/vm-configs/nvidia-test.nix
-            home-manager.nixosModules.home-manager
-          ];
-        };
-        
-        minimal-test = nixpkgs.lib.nixosSystem {
-          inherit system;
-          modules = [
-            self.nixosModules.default
-            ./testing/vm-configs/minimal-test.nix
-            home-manager.nixosModules.home-manager
+            ./testing/vm-configs/basic-test-simple.nix
           ];
         };
       };
