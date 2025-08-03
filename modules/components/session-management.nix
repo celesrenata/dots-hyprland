@@ -41,49 +41,47 @@ in
       };
     };
 
-    # Session environment setup service
-    systemd.user.services."${cfg.target}-env" = {
-      Unit = {
-        Description = "Set up Hyprland session environment";
-        Before = [ cfg.target ];
-        PartOf = [ cfg.target ];
-      };
-
-      Service = {
-        Type = "oneshot";
-        ExecStart = pkgs.writeShellScript "setup-hyprland-session-env" ''
-          # Set up session environment variables
-          ${lib.concatMapStringsSep "\n" (name: 
-            "export ${name}='${cfg.environment.${name}}'"
-          ) (lib.attrNames cfg.environment)}
-          
-          # Create necessary directories
-          mkdir -p "${mainCfg.dataDir}"
-          mkdir -p "${mainCfg.cacheDir}"
-          
-          # Set up XDG directories
-          ${pkgs.xdg-user-dirs}/bin/xdg-user-dirs-update
-          
-          echo "Hyprland session environment ready"
-        '';
-        RemainAfterExit = true;
-      };
-
-      Install = {
-        WantedBy = [ cfg.target ];
-      };
-    };
-
-    # Ensure auto-start services are wanted by the session target
-    systemd.user.services = lib.genAttrs cfg.autoStart (serviceName: {
-      Install = {
-        WantedBy = [ cfg.target ];
-      };
-    });
-
     # Session variables
     home.sessionVariables = cfg.environment // {
       HYPRLAND_SESSION_TARGET = cfg.target;
     };
+
+    # Configure auto-start services to use the session target
+    systemd.user.services = mkMerge [
+      # Session environment setup service
+      {
+        "${cfg.target}-env" = {
+          Unit = {
+            Description = "Set up Hyprland session environment";
+            Before = [ cfg.target ];
+            PartOf = [ cfg.target ];
+          };
+
+          Service = {
+            Type = "oneshot";
+            ExecStart = pkgs.writeShellScript "setup-hyprland-session-env" ''
+              # Set up session environment variables
+              ${lib.concatMapStringsSep "\n" (name: 
+                "export ${name}='${cfg.environment.${name}}'"
+              ) (lib.attrNames cfg.environment)}
+              
+              # Create necessary directories
+              mkdir -p "${mainCfg.dataDir}"
+              mkdir -p "${mainCfg.cacheDir}"
+              
+              # Set up XDG directories
+              ${pkgs.xdg-user-dirs}/bin/xdg-user-dirs-update
+              
+              echo "Hyprland session environment ready"
+            '';
+            RemainAfterExit = true;
+          };
+
+          Install = {
+            WantedBy = [ cfg.target ];
+          };
+        };
+      }
+    ];
   };
 }

@@ -36,6 +36,13 @@ in
       development = mkEnableOption "Development tools and utilities";
     };
 
+    # Hardware configuration
+    hardware = {
+      nvidia = mkEnableOption "NVIDIA GPU support";
+      amd = mkEnableOption "AMD GPU support";
+      intel = mkEnableOption "Intel GPU support" // { default = true; };
+    };
+
     # Feature toggles - Phase 3 Core Features
     features = {
       overview = mkEnableOption "Overview/launcher widget" // { default = true; };
@@ -103,9 +110,12 @@ in
 
     # Enable core components for Phase 5 testing
     programs.dots-hyprland.packages.enable = true;
+    programs.dots-hyprland.hyprland.enable = mkIf cfg.components.hyprland true;
+    programs.dots-hyprland.quickshell.enable = mkIf cfg.components.quickshell true;
+    programs.dots-hyprland.theming.enable = mkIf cfg.components.theming true;
+    programs.dots-hyprland.session.enable = mkIf cfg.enable true;  # Session management
     # programs.dots-hyprland.ai.enable = mkIf cfg.components.ai true;  # Temporarily disabled
     # programs.dots-hyprland.customization.enable = mkIf cfg.enable true;  # Temporarily disabled
-    programs.dots-hyprland.services.enable = mkIf cfg.enable true;  # Use simplified version
     
     # Direct Hyprland configuration - avoiding module conflicts
     wayland.windowManager.hyprland = mkIf cfg.components.hyprland {

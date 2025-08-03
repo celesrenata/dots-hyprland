@@ -15,9 +15,9 @@ let
 
   # Application lists for keybinds
   terminalApps = "\"${pkgs.foot}/bin/foot\" \"${pkgs.kitty}/bin/kitty\" \"${pkgs.alacritty}/bin/alacritty\"";
-  fileManagerApps = "\"${pkgs.nautilus}/bin/nautilus\" \"${pkgs.dolphin}/bin/dolphin\" \"${pkgs.thunar}/bin/thunar\"";
+  fileManagerApps = "\"${pkgs.nautilus}/bin/nautilus\" \"${pkgs.kdePackages.dolphin}/bin/dolphin\" \"${pkgs.xfce.thunar}/bin/thunar\"";
   browserApps = "\"${pkgs.firefox}/bin/firefox\" \"${pkgs.chromium}/bin/chromium\"";
-  codeEditorApps = "\"${pkgs.vscode}/bin/code\" \"${pkgs.kate}/bin/kate\"";
+  codeEditorApps = "\"${pkgs.vscodium}/bin/codium\" \"${pkgs.kdePackages.kate}/bin/kate\"";
   
   # Template substitutions
   templateVars = {
@@ -37,7 +37,7 @@ let
     CLIPHIST_BIN = "${pkgs.cliphist}/bin/cliphist";
     HYPRIDLE_BIN = "${pkgs.hypridle}/bin/hypridle";
     GNOME_KEYRING_BIN = "${pkgs.gnome-keyring}/bin/gnome-keyring-daemon";
-    POLKIT_AGENT_BIN = "${pkgs.polkit-kde-agent}/libexec/polkit-kde-authentication-agent-1";
+    POLKIT_AGENT_BIN = "${pkgs.kdePackages.polkit-kde-agent-1}/libexec/polkit-kde-authentication-agent-1";
     
     # Application lists
     TERMINAL_APPS = terminalApps;
@@ -45,7 +45,7 @@ let
     BROWSER_APPS = browserApps;
     CODE_EDITOR_APPS = codeEditorApps;
     OFFICE_APPS = "\"libreoffice\"";
-    TEXT_EDITOR_APPS = "\"${pkgs.kate}/bin/kate\" \"${pkgs.gedit}/bin/gedit\"";
+    TEXT_EDITOR_APPS = "\"${pkgs.kdePackages.kate}/bin/kate\" \"${pkgs.gedit}/bin/gedit\"";
     VOLUME_MIXER_APPS = "\"${pkgs.pavucontrol}/bin/pavucontrol\"";
     SETTINGS_APPS = "\"${pkgs.gnome-control-center}/bin/gnome-control-center\"";
     TASK_MANAGER_APPS = "\"${pkgs.gnome-system-monitor}/bin/gnome-system-monitor\"";
@@ -333,8 +333,22 @@ in
   };
 
   config = mkIf cfg.enable {
-    # Generate Hyprland configuration files
+    # Install essential scripts to ~/.config/hypr/scripts/
     xdg.configFile = {
+      "hypr/scripts/fuzzel-emoji.sh" = {
+        source = ../../scripts/fuzzel-emoji.sh;
+        executable = true;
+      };
+      "hypr/scripts/record.sh" = {
+        source = ../../scripts/record.sh;
+        executable = true;
+      };
+      "hypr/scripts/zoom.sh" = {
+        source = ../../scripts/zoom.sh;
+        executable = true;
+      };
+      
+      # Hyprland configuration files
       "hypr/hyprland.conf".text = processTemplate (builtins.readFile ../../configs/hypr/hyprland.conf.template) templateVars;
       "hypr/env.conf".text = processTemplate (builtins.readFile ../../configs/hypr/env.conf.template) templateVars;
       "hypr/execs.conf".text = processTemplate (builtins.readFile ../../configs/hypr/execs.conf.template) templateVars;
@@ -375,6 +389,9 @@ in
       # Screenshot and screen tools
       grim slurp hyprshot
       
+      # Recording tools (for record.sh)
+      wf-recorder
+      
       # Clipboard and utilities
       wl-clipboard cliphist
       
@@ -384,11 +401,17 @@ in
       # System tools
       brightnessctl tesseract
       
+      # Math and utilities (for zoom.sh)
+      bc jq
+      
+      # Notifications
+      libnotify
+      
       # Authentication
-      gnome-keyring polkit-kde-agent
+      gnome-keyring kdePackages.polkit-kde-agent-1
       
       # Applications (basic set)
-      foot fuzzel wlogout
+      foot fuzzel wlogout nautilus
     ];
   };
 }
