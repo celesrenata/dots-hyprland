@@ -36,6 +36,9 @@
         # Custom scripts package
         scripts = pkgs.callPackage ./packages/scripts { };
         
+        # Material color utilities
+        material-color-utilities = pkgs.callPackage ./packages/material-color-utilities { };
+        
         # Default package points to scripts
         default = self.packages.${system}.scripts;
       };
@@ -117,6 +120,36 @@
             };
           }
         ];
+      };
+
+      # NixOS configurations for testing
+      nixosConfigurations = {
+        basic-test = nixpkgs.lib.nixosSystem {
+          inherit system;
+          modules = [
+            self.nixosModules.default
+            ./testing/vm-configs/basic-test.nix
+            home-manager.nixosModules.home-manager
+          ];
+        };
+        
+        nvidia-test = nixpkgs.lib.nixosSystem {
+          inherit system;
+          modules = [
+            self.nixosModules.default
+            ./testing/vm-configs/nvidia-test.nix
+            home-manager.nixosModules.home-manager
+          ];
+        };
+        
+        minimal-test = nixpkgs.lib.nixosSystem {
+          inherit system;
+          modules = [
+            self.nixosModules.default
+            ./testing/vm-configs/minimal-test.nix
+            home-manager.nixosModules.home-manager
+          ];
+        };
       };
 
       # Formatter

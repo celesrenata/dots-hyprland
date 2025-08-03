@@ -109,8 +109,13 @@ in
       driSupport32Bit = true;
     };
 
+    # Video drivers configuration
+    services.xserver.videoDrivers = 
+      (optionals cfg.hardware.nvidia [ "nvidia" ]) ++
+      (optionals cfg.hardware.amd [ "amdgpu" ]) ++
+      (optionals cfg.hardware.intel [ "modesetting" ]);
+
     # NVIDIA specific configuration
-    services.xserver.videoDrivers = mkIf cfg.hardware.nvidia [ "nvidia" ];
     hardware.nvidia = mkIf cfg.hardware.nvidia {
       modesetting.enable = true;
       powerManagement.enable = false;
@@ -118,12 +123,6 @@ in
       open = false;
       nvidiaSettings = true;
     };
-
-    # AMD specific configuration
-    services.xserver.videoDrivers = mkIf cfg.hardware.amd [ "amdgpu" ];
-
-    # Intel specific configuration
-    services.xserver.videoDrivers = mkIf cfg.hardware.intel [ "modesetting" ];
 
     # System packages needed for dots-hyprland
     environment.systemPackages = with pkgs; [
