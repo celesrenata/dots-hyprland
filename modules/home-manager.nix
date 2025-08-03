@@ -10,10 +10,11 @@ in
   imports = [
     ./components/packages.nix
     ./components/hyprland-config.nix  # Actual Hyprland configuration
-    ./components/material-you-theming.nix  # NEW: Material You theming system
+    ./components/material-you-theming.nix  # Material You theming system
+    ./components/quickshell-widgets.nix  # Complete Quickshell widget system
+    ./components/session-management.nix  # NEW: Proper session management
     # ./components/ai.nix  # Temporarily disabled for testing
     # ./components/customization.nix  # Temporarily disabled for testing
-    ./components/service-management-simple.nix  # Use simplified version
   ];
 
   options.programs.dots-hyprland = {

@@ -101,7 +101,7 @@
               components = {
                 hyprland = true;
                 quickshell = true;
-                theming = false;  # Phase 4: Material You theming (testing)
+                theming = true;   # ✅ ENABLED: Material You theming
                 ai = false;       # Phase 4: AI integration (testing)
                 audio = true;
               };
