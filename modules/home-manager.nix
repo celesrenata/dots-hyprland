@@ -6,9 +6,10 @@ let
   cfg = config.programs.dots-hyprland;
 in
 {
-  # Import only packages for now - keep it simple
+  # Import packages only for now - will add AI after testing
   imports = [
     ./components/packages.nix
+    # ./components/ai.nix  # Add back after testing
   ];
 
   options.programs.dots-hyprland = {
@@ -95,8 +96,9 @@ in
       DOTS_HYPRLAND_STYLE = cfg.style;
     };
 
-    # Enable packages
+    # Enable packages (AI will be added after testing)
     programs.dots-hyprland.packages.enable = true;
+    # programs.dots-hyprland.ai.enable = mkIf cfg.components.ai true;  # Add back after testing
     
     # Direct Hyprland configuration - avoiding module conflicts
     wayland.windowManager.hyprland = mkIf cfg.components.hyprland {

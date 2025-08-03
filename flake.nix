@@ -85,30 +85,34 @@
             home.homeDirectory = "/home/user";
             home.stateVersion = "24.05";
             
-            # Enable dots-hyprland with basic configuration
+            # Enable dots-hyprland with Phase 4 advanced features
             programs.dots-hyprland = {
               enable = true;
               style = "illogical-impulse";
               
-              # Phase 3 Priority 1: Foundation components
+              # Phase 4: Advanced Features (testing without AI first)
               components = {
                 hyprland = true;
                 quickshell = true;
-                theming = false; # Disable for now
-                ai = false; # Phase 4: Advanced Features
+                theming = false;  # Phase 4: Material You theming (testing)
+                ai = false;       # Phase 4: AI integration (testing)
                 audio = true;
               };
               
-              # Phase 3 Priority 2: Core features
+              # Phase 4: Advanced features
               features = {
                 overview = true;
-                sidebar = false; # Disable for now
+                sidebar = true;        # Phase 4: Advanced sidebars
                 notifications = true;
                 mediaControls = true;
-                # Advanced features for Phase 4
-                screenCorners = false;
+                screenCorners = true;  # Phase 4: Screen corner interactions
                 onScreenKeyboard = false;
                 cheatsheet = true;
+              };
+              
+              keybinds = {
+                modifier = "SUPER";
+                terminal = "foot";
               };
             };
           }
