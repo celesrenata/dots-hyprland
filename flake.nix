@@ -158,10 +158,10 @@
               
               # Phase 3: Advanced Features (AI enabled!)
               components = {
-                hyprland = true;
-                quickshell = false;  # Temporarily disable to test
-                theming = false;     # Temporarily disable to test
-                ai = false;          # Temporarily disable to test
+                hyprland = true;     # Test our fix
+                quickshell = false;  # Keep disabled for now
+                theming = false;     # Keep disabled for now
+                ai = false;          # Keep disabled for now
                 audio = true;
                 development = false;
               };

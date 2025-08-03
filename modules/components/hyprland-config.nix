@@ -334,61 +334,53 @@ in
 
   config = mkIf cfg.enable {
     # Install essential scripts to ~/.config/hypr/scripts/
-    home.file = {
-      ".config/hypr/scripts/fuzzel-emoji.sh" = {
-        source = ../../scripts/fuzzel-emoji.sh;
-        executable = true;
-      };
-      ".config/hypr/scripts/record.sh" = {
-        source = ../../scripts/record.sh;
-        executable = true;
-      };
-      ".config/hypr/scripts/zoom.sh" = {
-        source = ../../scripts/zoom.sh;
-        executable = true;
-      };
-      
-      # wlogout session menu configuration
-      ".config/wlogout/layout".source = ../../configs/matugen/templates/wlogout/layout;
-      
-      # hypridle configuration for automatic screen locking
-      ".config/hypr/hypridle.conf".source = ../../configs/hypr/hypridle.conf.template;
-      
-      # Hyprland configuration files
-      ".config/hypr/hyprland.conf".text = processTemplate (builtins.readFile ../../configs/hypr/hyprland.conf.template) templateVars;
-      ".config/hypr/env.conf".text = processTemplate (builtins.readFile ../../configs/hypr/env.conf.template) templateVars;
-      ".config/hypr/execs.conf".text = processTemplate (builtins.readFile ../../configs/hypr/execs.conf.template) templateVars;
-      ".config/hypr/general.conf".text = processTemplate (builtins.readFile ../../configs/hypr/general.conf.template) templateVars;
-      ".config/hypr/keybinds.conf".text = processTemplate (builtins.readFile ../../configs/hypr/keybinds.conf.template) templateVars;
-      ".config/hypr/colors.conf".text = processTemplate (builtins.readFile ../../configs/hypr/colors.conf.template) templateVars;
-      ".config/hypr/rules.conf".text = processTemplate (builtins.readFile ../../configs/hypr/rules.conf.template) templateVars;
-      
-      # Scripts
-      ".config/hypr/scripts/launch_first_available.sh" = {
-        source = ../../configs/hypr/scripts/launch_first_available.sh;
-        executable = true;
-      };
-      ".config/hypr/scripts/workspace_action.sh" = {
-        source = ../../configs/hypr/scripts/workspace_action.sh;
-        executable = true;
-      };
+    home.file.".config/hypr/scripts/fuzzel-emoji.sh" = {
+      source = ../../scripts/fuzzel-emoji.sh;
+      executable = true;
+    };
+    
+    home.file.".config/hypr/scripts/record.sh" = {
+      source = ../../scripts/record.sh;
+      executable = true;
+    };
+    
+    home.file.".config/hypr/scripts/zoom.sh" = {
+      source = ../../scripts/zoom.sh;
+      executable = true;
+    };
+    
+    # wlogout session menu configuration
+    home.file.".config/wlogout/layout".source = ../../configs/matugen/templates/wlogout/layout;
+    
+    # hypridle configuration for automatic screen locking
+    home.file.".config/hypr/hypridle.conf".source = ../../configs/hypr/hypridle.conf.template;
+    
+    # Hyprland configuration files
+    # home.file.".config/hypr/hyprland.conf".text = processTemplate (builtins.readFile ../../configs/hypr/hyprland.conf.template) templateVars;
+    home.file.".config/hypr/env.conf".text = processTemplate (builtins.readFile ../../configs/hypr/env.conf.template) templateVars;
+    home.file.".config/hypr/execs.conf".text = processTemplate (builtins.readFile ../../configs/hypr/execs.conf.template) templateVars;
+    home.file.".config/hypr/general.conf".text = processTemplate (builtins.readFile ../../configs/hypr/general.conf.template) templateVars;
+    home.file.".config/hypr/keybinds.conf".text = processTemplate (builtins.readFile ../../configs/hypr/keybinds.conf.template) templateVars;
+    home.file.".config/hypr/colors.conf".text = processTemplate (builtins.readFile ../../configs/hypr/colors.conf.template) templateVars;
+    home.file.".config/hypr/rules.conf".text = processTemplate (builtins.readFile ../../configs/hypr/rules.conf.template) templateVars;
+    
+    # Scripts
+    home.file.".config/hypr/scripts/launch_first_available.sh" = {
+      source = ../../configs/hypr/scripts/launch_first_available.sh;
+      executable = true;
+    };
+    home.file.".config/hypr/scripts/workspace_action.sh" = {
+      source = ../../configs/hypr/scripts/workspace_action.sh;
+      executable = true;
     };
 
-    # Enable Hyprland
-    wayland.windowManager.hyprland = {
-      enable = true;
-      package = pkgs.hyprland;
-      
-      # Use our generated configuration
-      extraConfig = ''
-        # This file is managed by dots-hyprland NixOS module
-        # Your configuration is in ~/.config/hypr/hyprland.conf
-      '';
-    };
-
+    # Note: We don't use wayland.windowManager.hyprland here because it conflicts
+    # with our manual configuration management. Instead, we just install the package
+    # and manage all config files manually.
+    
     # Required packages for Hyprland functionality
     home.packages = with pkgs; [
-      # Core Hyprland ecosystem
+      # Core Hyprland ecosystem (including hyprland itself)
       hyprland hypridle hyprlock hyprpicker hyprsunset hyprutils
       hyprwayland-scanner xdg-desktop-portal-hyprland
       
