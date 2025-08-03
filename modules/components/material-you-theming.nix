@@ -31,6 +31,14 @@ let
     input_path = '${./../../configs/matugen/templates/foot/foot.ini}'
     output_path = '~/.config/foot/foot.ini'
 
+    [templates.kitty]
+    input_path = '${./../../configs/matugen/templates/kitty/kitty.conf}'
+    output_path = '~/.config/kitty/kitty.conf'
+
+    [templates.wlogout_style]
+    input_path = '${./../../configs/matugen/templates/wlogout/style.css}'
+    output_path = '~/.config/wlogout/style.css'
+
     [templates.gtk3]
     input_path = '${./../../configs/matugen/templates/gtk/gtk-colors.css}'
     output_path = '~/.config/gtk-3.0/gtk.css'
@@ -67,6 +75,8 @@ let
     mkdir -p ~/.config/hypr
     mkdir -p ~/.config/fuzzel
     mkdir -p ~/.config/foot
+    mkdir -p ~/.config/kitty
+    mkdir -p ~/.config/wlogout
     mkdir -p ~/.config/gtk-3.0
     mkdir -p ~/.config/gtk-4.0
 

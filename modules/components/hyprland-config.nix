@@ -348,6 +348,12 @@ in
         executable = true;
       };
       
+      # wlogout session menu configuration
+      "wlogout/layout".source = ../../configs/matugen/templates/wlogout/layout;
+      
+      # hypridle configuration for automatic screen locking
+      "hypr/hypridle.conf".source = ../../configs/hypr/hypridle.conf.template;
+      
       # Hyprland configuration files
       "hypr/hyprland.conf".text = processTemplate (builtins.readFile ../../configs/hypr/hyprland.conf.template) templateVars;
       "hypr/env.conf".text = processTemplate (builtins.readFile ../../configs/hypr/env.conf.template) templateVars;
@@ -411,7 +417,28 @@ in
       gnome-keyring kdePackages.polkit-kde-agent-1
       
       # Applications (basic set)
-      foot fuzzel wlogout nautilus
+      foot kitty fuzzel wlogout nautilus
     ];
+
+    # Systemd services for Hyprland ecosystem
+    systemd.user.services.hypridle = {
+      Unit = {
+        Description = "Hyprland idle daemon";
+        Documentation = [ "man:hypridle(1)" ];
+        PartOf = [ "hyprland-session.target" ];
+        After = [ "hyprland-session.target" ];
+      };
+
+      Service = {
+        Type = "simple";
+        ExecStart = "${pkgs.hypridle}/bin/hypridle";
+        Restart = "on-failure";
+        RestartSec = 1;
+      };
+
+      Install = {
+        WantedBy = [ "hyprland-session.target" ];
+      };
+    };
   };
 }
