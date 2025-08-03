@@ -61,7 +61,7 @@ let
     '';
 
   # Color substitution system with advanced features
-  applyColorScheme = template: colors: mode ? "dark":
+  applyColorScheme = template: colors: mode:
     let
       # Generate additional color variations
       generateColorVariations = baseColors: 

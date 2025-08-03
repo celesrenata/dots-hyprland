@@ -11,7 +11,7 @@ in
     ./components/packages.nix
     # ./components/ai.nix  # Temporarily disabled for testing
     # ./components/customization.nix  # Temporarily disabled for testing
-    # ./components/service-management.nix  # Temporarily disabled for testing
+    ./components/service-management-simple.nix  # Use simplified version
   ];
 
   options.programs.dots-hyprland = {
@@ -102,7 +102,7 @@ in
     programs.dots-hyprland.packages.enable = true;
     # programs.dots-hyprland.ai.enable = mkIf cfg.components.ai true;  # Temporarily disabled
     # programs.dots-hyprland.customization.enable = mkIf cfg.enable true;  # Temporarily disabled
-    # programs.dots-hyprland.services.enable = mkIf cfg.enable true;  # Temporarily disabled
+    programs.dots-hyprland.services.enable = mkIf cfg.enable true;  # Use simplified version
     
     # Direct Hyprland configuration - avoiding module conflicts
     wayland.windowManager.hyprland = mkIf cfg.components.hyprland {
