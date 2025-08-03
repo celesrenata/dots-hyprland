@@ -10,26 +10,8 @@ in
   options.programs.dots-hyprland.quickshell = {
     enable = mkEnableOption "Quickshell widget system";
 
-    # Module configuration - Phase 3 Core Features
-    modules = {
-      bar = mkEnableOption "Top bar" // { default = true; };
-      overview = mkEnableOption "Overview/launcher" // { default = true; };
-      sidebarLeft = mkEnableOption "Left sidebar" // { default = true; };
-      sidebarRight = mkEnableOption "Right sidebar" // { default = true; };
-      notifications = mkEnableOption "Notification popups" // { default = true; };
-      mediaControls = mkEnableOption "Media control widgets" // { default = true; };
-      onScreenDisplay = mkEnableOption "Volume/brightness OSD" // { default = true; };
-      cheatsheet = mkEnableOption "Keybind cheatsheet" // { default = true; };
-      
-      # Phase 4: Advanced Features
-      dock = mkEnableOption "Application dock";
-      screenCorners = mkEnableOption "Screen corner interactions";
-      onScreenKeyboard = mkEnableOption "Virtual keyboard";
-      session = mkEnableOption "Session management widgets";
-      lock = mkEnableOption "Lock screen integration";
-    };
+    autoStart = mkEnableOption "Auto-start Quickshell with Hyprland" // { default = true; };
 
-    # UI configuration
     scaling = mkOption {
       type = types.float;
       default = 1.0;
@@ -42,195 +24,137 @@ in
       description = "Interface language";
     };
 
-    # Custom configuration
     customConfig = mkOption {
       type = types.lines;
       default = "";
       description = "Additional Quickshell configuration";
     };
+
+    modules = {
+      bar = mkEnableOption "Top bar" // { default = true; };
+      overview = mkEnableOption "Overview/launcher" // { default = true; };
+      sidebarLeft = mkEnableOption "Left sidebar" // { default = true; };
+      sidebarRight = mkEnableOption "Right sidebar" // { default = true; };
+      notifications = mkEnableOption "Notification popups" // { default = true; };
+      mediaControls = mkEnableOption "Media control widgets" // { default = true; };
+      onScreenDisplay = mkEnableOption "Volume/brightness OSD" // { default = true; };
+      cheatsheet = mkEnableOption "Keybind cheatsheet" // { default = true; };
+      dock = mkEnableOption "Application dock";
+      screenCorners = mkEnableOption "Screen corner interactions";
+      onScreenKeyboard = mkEnableOption "Virtual keyboard";
+      session = mkEnableOption "Session management widgets";
+      lock = mkEnableOption "Lock screen integration";
+    };
   };
 
   config = mkIf cfg.enable {
-    # Add quickshell and related packages
+    # Ensure quickshell package is available
     home.packages = with pkgs; [
-      quickshell      # main widget system
-      fuzzel          # launcher backend
-      wlogout         # session management
+      quickshell
+      fuzzel  # launcher backend
+      wlogout # session management
       translate-shell # for translations
-      libnotify       # notifications
-      playerctl       # media controls
-      brightnessctl   # brightness control
-      pamixer         # audio control
     ];
 
-    # Generate main shell.qml configuration
-    home.file.".config/quickshell/ii/shell.qml".text = ''
+    # Generate shell.qml with file:// URLs to avoid import path issues
+    home.file.".config/quickshell/shell.qml".text = ''
       //@ pragma UseQApplication
       //@ pragma Env QS_NO_RELOAD_POPUP=1
       //@ pragma Env QT_QUICK_CONTROLS_STYLE=Basic
       //@ pragma Env QT_QUICK_FLICKABLE_WHEEL_DECELERATION=10000
+
+      // Adjust this to make the shell smaller or larger
       //@ pragma Env QT_SCALE_FACTOR=${toString cfg.scaling}
 
-      import "./modules/common/"
-      ${optionalString cfg.modules.bar ''import "./modules/bar/"''}
-      ${optionalString cfg.modules.overview ''import "./modules/overview/"''}
-      ${optionalString cfg.modules.sidebarLeft ''import "./modules/sidebarLeft/"''}
-      ${optionalString cfg.modules.sidebarRight ''import "./modules/sidebarRight/"''}
-      ${optionalString cfg.modules.notifications ''import "./modules/notificationPopup/"''}
-      ${optionalString cfg.modules.mediaControls ''import "./modules/mediaControls/"''}
-      ${optionalString cfg.modules.onScreenDisplay ''import "./modules/onScreenDisplay/"''}
-      ${optionalString cfg.modules.cheatsheet ''import "./modules/cheatsheet/"''}
-      ${optionalString cfg.modules.dock ''import "./modules/dock/"''}
-      ${optionalString cfg.modules.screenCorners ''import "./modules/screenCorners/"''}
-      ${optionalString cfg.modules.onScreenKeyboard ''import "./modules/onScreenKeyboard/"''}
-      ${optionalString cfg.modules.session ''import "./modules/session/"''}
-      ${optionalString cfg.modules.lock ''import "./modules/lock/"''}
+      import "file://${config.home.homeDirectory}/.config/quickshell/modules/common/"
+      import "file://${config.home.homeDirectory}/.config/quickshell/modules/background/"
+      import "file://${config.home.homeDirectory}/.config/quickshell/modules/bar/"
+      import "file://${config.home.homeDirectory}/.config/quickshell/modules/cheatsheet/"
+      import "file://${config.home.homeDirectory}/.config/quickshell/modules/dock/"
+      import "file://${config.home.homeDirectory}/.config/quickshell/modules/lock/"
+      import "file://${config.home.homeDirectory}/.config/quickshell/modules/mediaControls/"
+      import "file://${config.home.homeDirectory}/.config/quickshell/modules/notificationPopup/"
+      import "file://${config.home.homeDirectory}/.config/quickshell/modules/onScreenDisplay/"
+      import "file://${config.home.homeDirectory}/.config/quickshell/modules/onScreenKeyboard/"
+      import "file://${config.home.homeDirectory}/.config/quickshell/modules/overview/"
+      import "file://${config.home.homeDirectory}/.config/quickshell/modules/screenCorners/"
+      import "file://${config.home.homeDirectory}/.config/quickshell/modules/session/"
+      import "file://${config.home.homeDirectory}/.config/quickshell/modules/sidebarLeft/"
+      import "file://${config.home.homeDirectory}/.config/quickshell/modules/sidebarRight/"
 
       import QtQuick
       import QtQuick.Controls
       import QtQuick.Layouts
       import QtQuick.Window
       import Quickshell
-      import "./services/"
+      import "file://${config.home.homeDirectory}/.config/quickshell/services/"
 
       ShellRoot {
           // Module enable flags
-          property bool enableBar: ${boolToString cfg.modules.bar}
-          property bool enableOverview: ${boolToString cfg.modules.overview}
-          property bool enableSidebarLeft: ${boolToString cfg.modules.sidebarLeft}
-          property bool enableSidebarRight: ${boolToString cfg.modules.sidebarRight}
-          property bool enableNotificationPopup: ${boolToString cfg.modules.notifications}
-          property bool enableMediaControls: ${boolToString cfg.modules.mediaControls}
-          property bool enableOnScreenDisplayBrightness: ${boolToString cfg.modules.onScreenDisplay}
-          property bool enableOnScreenDisplayVolume: ${boolToString cfg.modules.onScreenDisplay}
-          property bool enableCheatsheet: ${boolToString cfg.modules.cheatsheet}
-          property bool enableDock: ${boolToString cfg.modules.dock}
-          property bool enableScreenCorners: ${boolToString cfg.modules.screenCorners}
-          property bool enableOnScreenKeyboard: ${boolToString cfg.modules.onScreenKeyboard}
-          property bool enableSession: ${boolToString cfg.modules.session}
-          property bool enableLock: ${boolToString cfg.modules.lock}
+          property bool enableBar: ${lib.boolToString cfg.modules.bar}
+          property bool enableOverview: ${lib.boolToString cfg.modules.overview}
+          property bool enableSidebarLeft: ${lib.boolToString cfg.modules.sidebarLeft}
+          property bool enableSidebarRight: ${lib.boolToString cfg.modules.sidebarRight}
+          property bool enableNotificationPopup: ${lib.boolToString cfg.modules.notifications}
+          property bool enableMediaControls: ${lib.boolToString cfg.modules.mediaControls}
+          property bool enableOnScreenDisplayBrightness: ${lib.boolToString cfg.modules.onScreenDisplay}
+          property bool enableOnScreenDisplayVolume: ${lib.boolToString cfg.modules.onScreenDisplay}
+          property bool enableCheatsheet: ${lib.boolToString cfg.modules.cheatsheet}
+          property bool enableDock: ${lib.boolToString cfg.modules.dock}
+          property bool enableScreenCorners: ${lib.boolToString cfg.modules.screenCorners}
+          property bool enableOnScreenKeyboard: ${lib.boolToString cfg.modules.onScreenKeyboard}
+          property bool enableSession: ${lib.boolToString cfg.modules.session}
+          property bool enableLock: ${lib.boolToString cfg.modules.lock}
 
           // Configuration properties
-          property real scalingFactor: ${toString cfg.scaling}
+          property real scaling: ${toString cfg.scaling}
           property string language: "${cfg.language}"
-          property string style: "${mainCfg.style}"
 
+          // Custom configuration
           ${cfg.customConfig}
       }
     '';
 
-    # Generate settings.qml configuration
-    home.file.".config/quickshell/ii/settings.qml".text = ''
-      import QtQuick
-      import QtQuick.Controls
-      import QtQuick.Layouts
-
-      ApplicationWindow {
-          id: settingsWindow
-          title: "illogical-impulse Settings"
-          width: 800
-          height: 600
-          visible: true
-
-          ScrollView {
-              anchors.fill: parent
-              
-              ColumnLayout {
-                  width: parent.width
-                  spacing: 20
-                  
-                  Text {
-                      text: "dots-hyprland Configuration"
-                      font.pixelSize: 24
-                      font.bold: true
-                  }
-                  
-                  GroupBox {
-                      title: "Modules"
-                      Layout.fillWidth: true
-                      
-                      GridLayout {
-                          columns: 2
-                          
-                          CheckBox {
-                              text: "Top Bar"
-                              checked: ${boolToString cfg.modules.bar}
-                              enabled: false
-                          }
-                          
-                          CheckBox {
-                              text: "Overview"
-                              checked: ${boolToString cfg.modules.overview}
-                              enabled: false
-                          }
-                          
-                          CheckBox {
-                              text: "Sidebars"
-                              checked: ${boolToString (cfg.modules.sidebarLeft || cfg.modules.sidebarRight)}
-                              enabled: false
-                          }
-                          
-                          CheckBox {
-                              text: "Notifications"
-                              checked: ${boolToString cfg.modules.notifications}
-                              enabled: false
-                          }
-                      }
-                  }
-                  
-                  GroupBox {
-                      title: "Configuration"
-                      Layout.fillWidth: true
-                      
-                      GridLayout {
-                          columns: 2
-                          
-                          Label { text: "Scaling Factor:" }
-                          SpinBox {
-                              from: 50
-                              to: 300
-                              value: ${toString (cfg.scaling * 100)}
-                              suffix: "%"
-                              enabled: false
-                          }
-                          
-                          Label { text: "Language:" }
-                          ComboBox {
-                              model: ["en_US", "es_ES", "fr_FR", "de_DE"]
-                              currentIndex: model.indexOf("${cfg.language}")
-                              enabled: false
-                          }
-                      }
-                  }
-                  
-                  Text {
-                      text: "Note: Settings are configured through NixOS configuration."
-                      font.italic: true
-                      color: "gray"
-                  }
-              }
-          }
-      }
-    '';
-
-    # Copy Quickshell configuration templates (will be created in next steps)
-    home.file.".config/quickshell/ii/modules" = {
+    # Copy other configuration files (not shell.qml since we generate it above)
+    home.file.".config/quickshell/GlobalStates.qml".source = ../../configs/quickshell/ii/GlobalStates.qml;
+    home.file.".config/quickshell/ReloadPopup.qml".source = ../../configs/quickshell/ii/ReloadPopup.qml;
+    home.file.".config/quickshell/Translation.qml".source = ../../configs/quickshell/ii/Translation.qml;
+    home.file.".config/quickshell/screenshot.qml".source = ../../configs/quickshell/ii/screenshot.qml;
+    home.file.".config/quickshell/settings.qml".source = ../../configs/quickshell/ii/settings.qml;
+    home.file.".config/quickshell/welcome.qml".source = ../../configs/quickshell/ii/welcome.qml;
+    
+    # Complete modules directory
+    home.file.".config/quickshell/modules" = {
       source = ../../configs/quickshell/ii/modules;
       recursive = true;
     };
-
-    home.file.".config/quickshell/ii/services" = {
+    
+    # Complete services directory
+    home.file.".config/quickshell/services" = {
       source = ../../configs/quickshell/ii/services;
       recursive = true;
     };
-
-    # Language configuration
-    home.file.".config/quickshell/translations/${cfg.language}.json" = {
-      source = ../../configs/quickshell/translations + "/${cfg.language}.json";
+    
+    # Scripts directory
+    home.file.".config/quickshell/scripts" = {
+      source = ../../configs/quickshell/ii/scripts;
+      recursive = true;
+    };
+    
+    # Assets directory
+    home.file.".config/quickshell/assets" = {
+      source = ../../configs/quickshell/ii/assets;
+      recursive = true;
+    };
+    
+    # Defaults directory
+    home.file.".config/quickshell/defaults" = {
+      source = ../../configs/quickshell/ii/defaults;
+      recursive = true;
     };
 
     # Systemd service for Quickshell
-    systemd.user.services.quickshell = {
+    systemd.user.services.quickshell = mkIf cfg.autoStart {
       Unit = {
         Description = "Quickshell - QtQuick based desktop shell";
         PartOf = [ "hyprland-session.target" ];
@@ -248,23 +172,11 @@ in
         Environment = [
           "QT_SCALE_FACTOR=${toString cfg.scaling}"
           "QT_QUICK_CONTROLS_STYLE=Basic"
-          "QUICKSHELL_CONFIG_DIR=${mainCfg.configDir}/quickshell"
         ];
       };
 
       Install = {
         WantedBy = [ "hyprland-session.target" ];
-      };
-    };
-
-    # Create hyprland session target
-    systemd.user.targets.hyprland-session = {
-      Unit = {
-        Description = "Hyprland compositor session";
-        Documentation = [ "man:systemd.special(7)" ];
-        BindsTo = [ "graphical-session.target" ];
-        Wants = [ "graphical-session-pre.target" ];
-        After = [ "graphical-session-pre.target" ];
       };
     };
   };

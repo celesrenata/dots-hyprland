@@ -71,44 +71,42 @@ in
     ];
 
     # Copy complete Quickshell configuration
-    home.file = {
-      # Main configuration files (shell.qml is generated dynamically below)
-      ".config/quickshell/ii/GlobalStates.qml".source = ../../configs/quickshell/ii/GlobalStates.qml;
-      ".config/quickshell/ii/ReloadPopup.qml".source = ../../configs/quickshell/ii/ReloadPopup.qml;
-      ".config/quickshell/ii/Translation.qml".source = ../../configs/quickshell/ii/Translation.qml;
-      ".config/quickshell/ii/screenshot.qml".source = ../../configs/quickshell/ii/screenshot.qml;
-      ".config/quickshell/ii/settings.qml".source = ../../configs/quickshell/ii/settings.qml;
-      ".config/quickshell/ii/welcome.qml".source = ../../configs/quickshell/ii/welcome.qml;
-      
-      # Complete modules directory
-      ".config/quickshell/ii/modules" = {
-        source = ../../configs/quickshell/ii/modules;
-        recursive = true;
-      };
-      
-      # Complete services directory
-      ".config/quickshell/ii/services" = {
-        source = ../../configs/quickshell/ii/services;
-        recursive = true;
-      };
-      
-      # Scripts directory
-      ".config/quickshell/ii/scripts" = {
-        source = ../../configs/quickshell/ii/scripts;
-        recursive = true;
-      };
-      
-      # Assets directory
-      ".config/quickshell/ii/assets" = {
-        source = ../../configs/quickshell/ii/assets;
-        recursive = true;
-      };
-      
-      # Defaults directory
-      ".config/quickshell/ii/defaults" = {
-        source = ../../configs/quickshell/ii/defaults;
-        recursive = true;
-      };
+    # Main configuration files (shell.qml is generated dynamically below)
+    home.file.".config/quickshell/ii/GlobalStates.qml".source = ../../configs/quickshell/ii/GlobalStates.qml;
+    home.file.".config/quickshell/ii/ReloadPopup.qml".source = ../../configs/quickshell/ii/ReloadPopup.qml;
+    home.file.".config/quickshell/ii/Translation.qml".source = ../../configs/quickshell/ii/Translation.qml;
+    home.file.".config/quickshell/ii/screenshot.qml".source = ../../configs/quickshell/ii/screenshot.qml;
+    home.file.".config/quickshell/ii/settings.qml".source = ../../configs/quickshell/ii/settings.qml;
+    home.file.".config/quickshell/ii/welcome.qml".source = ../../configs/quickshell/ii/welcome.qml;
+    
+    # Complete modules directory
+    home.file.".config/quickshell/ii/modules" = {
+      source = ../../configs/quickshell/ii/modules;
+      recursive = true;
+    };
+    
+    # Complete services directory
+    home.file.".config/quickshell/ii/services" = {
+      source = ../../configs/quickshell/ii/services;
+      recursive = true;
+    };
+    
+    # Scripts directory
+    home.file.".config/quickshell/ii/scripts" = {
+      source = ../../configs/quickshell/ii/scripts;
+      recursive = true;
+    };
+    
+    # Assets directory
+    home.file.".config/quickshell/ii/assets" = {
+      source = ../../configs/quickshell/ii/assets;
+      recursive = true;
+    };
+    
+    # Defaults directory
+    home.file.".config/quickshell/ii/defaults" = {
+      source = ../../configs/quickshell/ii/defaults;
+      recursive = true;
     };
 
     # Generate module configuration based on enabled modules

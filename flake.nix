@@ -158,8 +158,8 @@
               
               # Phase 3: Advanced Features (AI enabled!)
               components = {
-                hyprland = true;     # Test our fix
-                quickshell = false;  # Keep disabled for now
+                hyprland = true;     # ✅ Working!
+                quickshell = true;   # Test with file copying approach
                 theming = false;     # Keep disabled for now
                 ai = false;          # Keep disabled for now
                 audio = true;

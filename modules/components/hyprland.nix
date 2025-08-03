@@ -106,10 +106,12 @@ in
             }
             ''}
             
-            drop_shadow = true
-            shadow_range = 30
-            shadow_render_power = 3
-            col.shadow = 0x66000000
+            shadow {
+                enabled = true
+                range = 30
+                render_power = 3
+                color = 0x66000000
+            }
             
             dim_inactive = false
             dim_strength = 0.1
@@ -252,21 +254,21 @@ in
         submap = reset
         
         # Window rules
-        windowrule = float,^(pavucontrol)$
-        windowrule = float,^(nm-connection-editor)$
-        windowrule = float,^(blueman-manager)$
-        windowrule = float,^(wlogout)$
-        windowrule = float,^(quickshell)$
+        windowrulev2 = float,class:^(pavucontrol)$
+        windowrulev2 = float,class:^(nm-connection-editor)$
+        windowrulev2 = float,class:^(blueman-manager)$
+        windowrulev2 = float,class:^(wlogout)$
+        windowrulev2 = float,class:^(quickshell)$
         
-        windowrule = opacity 0.9 0.9,^(foot)$
-        windowrule = opacity 0.9 0.9,^(kitty)$
+        windowrulev2 = opacity 0.9 0.9,class:^(foot)$
+        windowrulev2 = opacity 0.9 0.9,class:^(kitty)$
         
-        windowrule = size 800 600,^(pavucontrol)$
-        windowrule = size 600 400,^(nm-connection-editor)$
+        windowrulev2 = size 800 600,class:^(pavucontrol)$
+        windowrulev2 = size 600 400,class:^(nm-connection-editor)$
         
-        windowrule = center,^(pavucontrol)$
-        windowrule = center,^(nm-connection-editor)$
-        windowrule = center,^(blueman-manager)$
+        windowrulev2 = center,class:^(pavucontrol)$
+        windowrulev2 = center,class:^(nm-connection-editor)$
+        windowrulev2 = center,class:^(blueman-manager)$
         
         # Layer rules for quickshell
         layerrule = blur,quickshell
