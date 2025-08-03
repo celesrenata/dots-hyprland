@@ -72,8 +72,7 @@ in
 
     # Copy complete Quickshell configuration
     xdg.configFile = {
-      # Main configuration files
-      "quickshell/ii/shell.qml".source = ../../configs/quickshell/ii/shell.qml;
+      # Main configuration files (shell.qml is generated dynamically below)
       "quickshell/ii/GlobalStates.qml".source = ../../configs/quickshell/ii/GlobalStates.qml;
       "quickshell/ii/ReloadPopup.qml".source = ../../configs/quickshell/ii/ReloadPopup.qml;
       "quickshell/ii/Translation.qml".source = ../../configs/quickshell/ii/Translation.qml;
