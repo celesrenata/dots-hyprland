@@ -1,8 +1,8 @@
 { config, lib, pkgs, ... }:
 
 {
-  # Simple test configuration without complex VM options
-  imports = [ ../../modules/nixos-system.nix ];
+  # Simple test configuration without importing our custom module
+  # (since it's already imported in the flake)
 
   # Enable dots-hyprland system integration
   services.dots-hyprland = {

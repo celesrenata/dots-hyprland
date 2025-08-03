@@ -62,13 +62,16 @@ in
 
   config = mkIf cfg.enable {
     # Display manager configuration
+    services.displayManager = {
+      gdm = mkIf (cfg.displayManager == "gdm") {
+        enable = true;
+        wayland = true;
+      };
+    };
+    
     services.xserver = {
       enable = true;
       displayManager = {
-        gdm = mkIf (cfg.displayManager == "gdm") {
-          enable = true;
-          wayland = true;
-        };
         sddm = mkIf (cfg.displayManager == "sddm") {
           enable = true;
           wayland.enable = true;
@@ -143,10 +146,9 @@ in
     services.openvpn.servers = mkIf cfg.networking.vpn {};
     
     # GPU support
-    hardware.opengl = {
+    hardware.graphics = {
       enable = true;
-      driSupport = true;
-      driSupport32Bit = true;
+      enable32Bit = true;
       
       extraPackages = with pkgs; [
         intel-media-driver # For Intel GPUs
@@ -206,8 +208,11 @@ in
         noto-fonts-cjk-sans
         noto-fonts-emoji
         
-        # Programming fonts
-        (nerdfonts.override { fonts = [ "JetBrainsMono" "FiraCode" "Hack" "SourceCodePro" ]; })
+        # Programming fonts (updated nerdfonts syntax)
+        nerd-fonts.jetbrains-mono
+        nerd-fonts.fira-code
+        nerd-fonts.hack
+        nerd-fonts.sauce-code-pro
         
         # System fonts
         dejavu_fonts
@@ -334,12 +339,12 @@ in
     # Firmware updates
     services.fwupd.enable = true;
     
-    # Locate database
-    services.locate = {
-      enable = true;
-      package = pkgs.mlocate;
-      localuser = null;
-    };
+    # Locate database (removed - deprecated)
+    # services.locate = {
+    #   enable = true;
+    #   package = pkgs.mlocate;
+    #   localuser = null;
+    # };
 
     # Zram swap
     zramSwap = {
