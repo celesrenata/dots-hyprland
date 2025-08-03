@@ -9,7 +9,8 @@ in
   # Import core components for Phase 5 testing
   imports = [
     ./components/packages.nix
-    ./components/hyprland-config.nix  # NEW: Actual Hyprland configuration
+    ./components/hyprland-config.nix  # Actual Hyprland configuration
+    ./components/material-you-theming.nix  # NEW: Material You theming system
     # ./components/ai.nix  # Temporarily disabled for testing
     # ./components/customization.nix  # Temporarily disabled for testing
     ./components/service-management-simple.nix  # Use simplified version
