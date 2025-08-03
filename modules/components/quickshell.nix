@@ -56,8 +56,9 @@ in
       translate-shell # for translations
     ];
 
-    # Generate shell.qml with file:// URLs to avoid import path issues
-    home.file.".config/quickshell/shell.qml".text = ''
+    # Stage shell.qml in ~/.configstaging/quickshell/ with relative imports
+    # Will be rsynced to ~/.config/quickshell/ by activation script
+    home.file.".configstaging/quickshell/shell.qml".text = ''
       //@ pragma UseQApplication
       //@ pragma Env QS_NO_RELOAD_POPUP=1
       //@ pragma Env QT_QUICK_CONTROLS_STYLE=Basic
@@ -66,28 +67,28 @@ in
       // Adjust this to make the shell smaller or larger
       //@ pragma Env QT_SCALE_FACTOR=${toString cfg.scaling}
 
-      import "file://${config.home.homeDirectory}/.config/quickshell/modules/common/"
-      import "file://${config.home.homeDirectory}/.config/quickshell/modules/background/"
-      import "file://${config.home.homeDirectory}/.config/quickshell/modules/bar/"
-      import "file://${config.home.homeDirectory}/.config/quickshell/modules/cheatsheet/"
-      import "file://${config.home.homeDirectory}/.config/quickshell/modules/dock/"
-      import "file://${config.home.homeDirectory}/.config/quickshell/modules/lock/"
-      import "file://${config.home.homeDirectory}/.config/quickshell/modules/mediaControls/"
-      import "file://${config.home.homeDirectory}/.config/quickshell/modules/notificationPopup/"
-      import "file://${config.home.homeDirectory}/.config/quickshell/modules/onScreenDisplay/"
-      import "file://${config.home.homeDirectory}/.config/quickshell/modules/onScreenKeyboard/"
-      import "file://${config.home.homeDirectory}/.config/quickshell/modules/overview/"
-      import "file://${config.home.homeDirectory}/.config/quickshell/modules/screenCorners/"
-      import "file://${config.home.homeDirectory}/.config/quickshell/modules/session/"
-      import "file://${config.home.homeDirectory}/.config/quickshell/modules/sidebarLeft/"
-      import "file://${config.home.homeDirectory}/.config/quickshell/modules/sidebarRight/"
+      import "./modules/common/"
+      import "./modules/background/"
+      import "./modules/bar/"
+      import "./modules/cheatsheet/"
+      import "./modules/dock/"
+      import "./modules/lock/"
+      import "./modules/mediaControls/"
+      import "./modules/notificationPopup/"
+      import "./modules/onScreenDisplay/"
+      import "./modules/onScreenKeyboard/"
+      import "./modules/overview/"
+      import "./modules/screenCorners/"
+      import "./modules/session/"
+      import "./modules/sidebarLeft/"
+      import "./modules/sidebarRight/"
 
       import QtQuick
       import QtQuick.Controls
       import QtQuick.Layouts
       import QtQuick.Window
       import Quickshell
-      import "file://${config.home.homeDirectory}/.config/quickshell/services/"
+      import "./services/"
 
       ShellRoot {
           // Module enable flags
@@ -115,40 +116,40 @@ in
       }
     '';
 
-    # Copy other configuration files (not shell.qml since we generate it above)
-    home.file.".config/quickshell/GlobalStates.qml".source = ../../configs/quickshell/ii/GlobalStates.qml;
-    home.file.".config/quickshell/ReloadPopup.qml".source = ../../configs/quickshell/ii/ReloadPopup.qml;
-    home.file.".config/quickshell/Translation.qml".source = ../../configs/quickshell/ii/Translation.qml;
-    home.file.".config/quickshell/screenshot.qml".source = ../../configs/quickshell/ii/screenshot.qml;
-    home.file.".config/quickshell/settings.qml".source = ../../configs/quickshell/ii/settings.qml;
-    home.file.".config/quickshell/welcome.qml".source = ../../configs/quickshell/ii/welcome.qml;
+    # Stage other configuration files in ~/.configstaging/quickshell/
+    home.file.".configstaging/quickshell/GlobalStates.qml".source = ../../configs/quickshell/ii/GlobalStates.qml;
+    home.file.".configstaging/quickshell/ReloadPopup.qml".source = ../../configs/quickshell/ii/ReloadPopup.qml;
+    home.file.".configstaging/quickshell/Translation.qml".source = ../../configs/quickshell/ii/Translation.qml;
+    home.file.".configstaging/quickshell/screenshot.qml".source = ../../configs/quickshell/ii/screenshot.qml;
+    home.file.".configstaging/quickshell/settings.qml".source = ../../configs/quickshell/ii/settings.qml;
+    home.file.".configstaging/quickshell/welcome.qml".source = ../../configs/quickshell/ii/welcome.qml;
     
     # Complete modules directory
-    home.file.".config/quickshell/modules" = {
+    home.file.".configstaging/quickshell/modules" = {
       source = ../../configs/quickshell/ii/modules;
       recursive = true;
     };
     
     # Complete services directory
-    home.file.".config/quickshell/services" = {
+    home.file.".configstaging/quickshell/services" = {
       source = ../../configs/quickshell/ii/services;
       recursive = true;
     };
     
     # Scripts directory
-    home.file.".config/quickshell/scripts" = {
+    home.file.".configstaging/quickshell/scripts" = {
       source = ../../configs/quickshell/ii/scripts;
       recursive = true;
     };
     
     # Assets directory
-    home.file.".config/quickshell/assets" = {
+    home.file.".configstaging/quickshell/assets" = {
       source = ../../configs/quickshell/ii/assets;
       recursive = true;
     };
     
     # Defaults directory
-    home.file.".config/quickshell/defaults" = {
+    home.file.".configstaging/quickshell/defaults" = {
       source = ../../configs/quickshell/ii/defaults;
       recursive = true;
     };
@@ -179,5 +180,17 @@ in
         WantedBy = [ "hyprland-session.target" ];
       };
     };
+
+    # Activation script to rsync from staging to actual config directory
+    home.activation.quickshellSetup = lib.hm.dag.entryAfter ["writeBoundary"] ''
+      # Create quickshell config directory
+      mkdir -p ~/.config/quickshell
+      
+      # Rsync from staging to actual config directory
+      if [ -d ~/.configstaging/quickshell ]; then
+        ${pkgs.rsync}/bin/rsync -azL --no-perms ~/.configstaging/quickshell/ ~/.config/quickshell/ 2>/dev/null || true
+        echo "Quickshell configuration synced from staging"
+      fi
+    '';
   };
 }
