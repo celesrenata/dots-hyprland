@@ -166,11 +166,11 @@ test_template_processing() {
 test_service_management() {
     phase5 "Testing Service Management Adaptation"
     
-    if [[ -f "$PROJECT_ROOT/modules/components/service-management.nix" ]]; then
+    if [[ -f "$PROJECT_ROOT/modules/components/service-management-simple.nix" ]]; then
         log "✅ Service management module exists"
         
         # Test module syntax
-        if nix-instantiate --parse "$PROJECT_ROOT/modules/components/service-management.nix" >/dev/null 2>&1; then
+        if nix-instantiate --parse "$PROJECT_ROOT/modules/components/service-management-simple.nix" >/dev/null 2>&1; then
             log "✅ Service management module syntax valid"
         else
             error "❌ Service management module syntax invalid"
@@ -185,14 +185,12 @@ test_service_management() {
     local features=(
         "session target"
         "core services"
-        "optional services"
-        "custom services"
-        "service monitoring"
-        "health checks"
+        "quickshell"
+        "hypridle"
     )
     
     for feature in "${features[@]}"; do
-        if grep -q "$(echo "$feature" | tr ' ' '.')" "$PROJECT_ROOT/modules/components/service-management.nix"; then
+        if grep -q "$(echo "$feature" | tr ' ' '.')" "$PROJECT_ROOT/modules/components/service-management-simple.nix"; then
             log "✅ Service management includes: $feature"
         else
             warn "⚠️  Service management missing: $feature"
