@@ -6,10 +6,12 @@ let
   cfg = config.programs.dots-hyprland;
 in
 {
-  # Import packages only for now - will add AI after testing
+  # Import core components for Phase 5 testing
   imports = [
     ./components/packages.nix
-    # ./components/ai.nix  # Add back after testing
+    # ./components/ai.nix  # Temporarily disabled for testing
+    # ./components/customization.nix  # Temporarily disabled for testing
+    # ./components/service-management.nix  # Temporarily disabled for testing
   ];
 
   options.programs.dots-hyprland = {
@@ -96,9 +98,11 @@ in
       DOTS_HYPRLAND_STYLE = cfg.style;
     };
 
-    # Enable packages (AI will be added after testing)
+    # Enable core components for Phase 5 testing
     programs.dots-hyprland.packages.enable = true;
-    # programs.dots-hyprland.ai.enable = mkIf cfg.components.ai true;  # Add back after testing
+    # programs.dots-hyprland.ai.enable = mkIf cfg.components.ai true;  # Temporarily disabled
+    # programs.dots-hyprland.customization.enable = mkIf cfg.enable true;  # Temporarily disabled
+    # programs.dots-hyprland.services.enable = mkIf cfg.enable true;  # Temporarily disabled
     
     # Direct Hyprland configuration - avoiding module conflicts
     wayland.windowManager.hyprland = mkIf cfg.components.hyprland {
