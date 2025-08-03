@@ -343,7 +343,7 @@ in
           WantedBy = [ cfg.session.target ];
         };
       };
-    systemd.user.services = {
+
       # Core services
       quickshell = mkIf cfg.core.quickshell.enable (
         createUserService {

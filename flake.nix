@@ -135,6 +135,25 @@
             ./testing/vm-configs/basic-test-simple.nix
           ];
         };
+        
+        nvidia-test = nixpkgs.lib.nixosSystem {
+          inherit system;
+          modules = [
+            self.nixosModules.default
+            ./testing/vm-configs/basic-test-simple.nix
+            # Note: NVIDIA support disabled in VM testing
+            # In real usage, enable: services.dots-hyprland.hardware.nvidia = true;
+          ];
+        };
+        
+        minimal-test = nixpkgs.lib.nixosSystem {
+          inherit system;
+          modules = [
+            self.nixosModules.default
+            ./testing/vm-configs/basic-test-simple.nix
+            # Note: Minimal config for testing - same as basic for VM compatibility
+          ];
+        };
       };
 
       # Formatter

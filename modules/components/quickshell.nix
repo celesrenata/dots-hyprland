@@ -51,13 +51,9 @@ in
   };
 
   config = mkIf cfg.enable {
-    # Add quickshell package - using official flake!
-    home.packages = [
-      pkgs.quickshell
-    ];
-
-    # Additional packages needed for widgets
+    # Add quickshell and related packages
     home.packages = with pkgs; [
+      quickshell      # main widget system
       fuzzel          # launcher backend
       wlogout         # session management
       translate-shell # for translations
