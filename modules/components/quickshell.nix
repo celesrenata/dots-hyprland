@@ -116,7 +116,7 @@ in
         Environment = [
           "QT_SCALE_FACTOR=${toString cfg.scaling}"
           "QT_QUICK_CONTROLS_STYLE=Basic"
-          "QML2_IMPORT_PATH=${config.xdg.configHome}/quickshell/ii:${pkgs.qt6.qtdeclarative}/lib/qt-6/qml"
+          "QML2_IMPORT_PATH=${config.xdg.configHome}/quickshell/ii:${pkgs.qt6.qtdeclarative}/lib/qt-6/qml:${pkgs.qt6.qt5compat}/lib/qt-6/qml"
         ];
       };
 
