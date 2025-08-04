@@ -24,8 +24,10 @@
     {
       # Package overlays
       overlays.default = final: prev: {
-        # Quickshell from official flake - no custom derivation needed!
-        quickshell = quickshell.packages.${system}.default;
+        # Use extended quickshell with additional Qt modules
+        quickshell = final.callPackage ./packages/quickshell-extended { 
+          quickshell = quickshell.packages.${system}.default;
+        };
         
         # Custom packages for dots-hyprland
         dots-hyprland-scripts = self.packages.${system}.scripts;
