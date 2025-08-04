@@ -32,19 +32,19 @@ Singleton {
     })
     property var regexSubstitutions: [
         {
-            "regex": /^steam_app_(\d+)$/,
+            "pattern": "^steam_app_(\\d+)$",
             "replace": "steam_icon_$1"
         },
         {
-            "regex": /Minecraft.*/,
+            "pattern": "Minecraft.*",
             "replace": "minecraft"
         },
         {
-            "regex": /.*polkit.*/,
+            "pattern": ".*polkit.*",
             "replace": "system-lock-screen"
         },
         {
-            "regex": /gcr.prompter/,
+            "pattern": "gcr.prompter",
             "replace": "system-lock-screen"
         }
     ]
@@ -105,8 +105,9 @@ Singleton {
         // Regex substitutions
         for (let i = 0; i < regexSubstitutions.length; i++) {
             const substitution = regexSubstitutions[i];
+            const regex = new RegExp(substitution.pattern);
             const replacedName = str.replace(
-                substitution.regex,
+                regex,
                 substitution.replace,
             );
             if (replacedName != str) return replacedName;
