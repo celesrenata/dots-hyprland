@@ -48,7 +48,7 @@ ShellRoot {
     property bool enableSession: true
     property bool enableSidebarLeft: true
     property bool enableSidebarRight: true
-    property bool enableSettings: true  // New: Settings window
+    // property bool enableSettings: true  // Temporarily disabled
 
     // Force initialization of some singletons
     Component.onCompleted: {
@@ -74,9 +74,9 @@ ShellRoot {
     LazyLoader { active: enableSession; component: Session {} }
     LazyLoader { active: enableSidebarLeft; component: SidebarLeft {} }
     LazyLoader { active: enableSidebarRight; component: SidebarRight {} }
-    LazyLoader { 
-        active: enableSettings
-        source: "./modules/settings/Settings.qml"
-    }
+    // LazyLoader { 
+    //     active: enableSettings
+    //     source: "./modules/settings/Settings.qml"
+    // }
 }
 
