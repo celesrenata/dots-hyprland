@@ -108,7 +108,7 @@ in
 
       Service = {
         Type = "simple";
-        ExecStart = "${pkgs.quickshell}/bin/quickshell -c ~/.config/quickshell/ii";
+        ExecStart = "${pkgs.quickshell}/bin/quickshell -c ${config.xdg.configHome}/quickshell/ii";
         ExecReload = "${pkgs.coreutils}/bin/kill -SIGUSR2 $MAINPID";
         Restart = "on-failure";
         RestartSec = 1;
