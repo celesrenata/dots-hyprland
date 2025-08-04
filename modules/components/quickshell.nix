@@ -113,6 +113,20 @@ in
         Restart = "on-failure";
         RestartSec = 1;
         TimeoutStopSec = 10;
+        # Inherit the user session environment
+        PassEnvironment = [
+          "WAYLAND_DISPLAY"
+          "XDG_RUNTIME_DIR" 
+          "XDG_SESSION_TYPE"
+          "XDG_CURRENT_DESKTOP"
+          "XDG_BACKEND"
+          "HYPRLAND_INSTANCE_SIGNATURE"
+          "XDG_SESSION_ID"
+          "XDG_SESSION_CLASS"
+          "XDG_SESSION_DESKTOP"
+          "XDG_SEAT"
+          "XDG_VTNR"
+        ];
         Environment = [
           "QT_SCALE_FACTOR=${toString cfg.scaling}"
           "QT_QUICK_CONTROLS_STYLE=Basic"
