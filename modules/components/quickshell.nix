@@ -101,9 +101,11 @@ in
     systemd.user.services.quickshell = mkIf cfg.autoStart {
       Unit = {
         Description = "Quickshell - QtQuick based desktop shell";
-        PartOf = [ "hyprland-session.target" ];
-        After = [ "hyprland-session.target" ];
-        Requisite = [ "hyprland-session.target" ];
+        PartOf = [ "graphical-session.target" ];
+        After = [ "graphical-session.target" ];
+        Requisite = [ "graphical-session.target" ];
+        # Ensure we're in the same session as the user
+        ConditionEnvironment = "WAYLAND_DISPLAY";
       };
 
       Service = {
@@ -113,6 +115,8 @@ in
         Restart = "on-failure";
         RestartSec = 1;
         TimeoutStopSec = 10;
+        # Import the entire user session environment
+        ExecStartPre = "${pkgs.systemd}/bin/systemctl --user import-environment";
         # Inherit the user session environment
         PassEnvironment = [
           "WAYLAND_DISPLAY"
