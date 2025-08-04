@@ -56,84 +56,8 @@ in
       translate-shell # for translations
     ];
 
-    # Stage shell.qml in ~/.configstaging/quickshell/ with relative imports
-    # Will be rsynced to ~/.config/quickshell/ by activation script
-    home.file.".configstaging/quickshell/shell.qml".text = ''
-      //@ pragma UseQApplication
-      //@ pragma Env QS_NO_RELOAD_POPUP=1
-      //@ pragma Env QT_QUICK_CONTROLS_STYLE=Basic
-      //@ pragma Env QT_QUICK_FLICKABLE_WHEEL_DECELERATION=10000
-
-      // Adjust this to make the shell smaller or larger
-      //@ pragma Env QT_SCALE_FACTOR=${toString cfg.scaling}
-
-      import "./modules/common/"
-      import "./modules/background/"
-      import "./modules/bar/"
-      import "./modules/cheatsheet/"
-      import "./modules/dock/"
-      import "./modules/lock/"
-      import "./modules/mediaControls/"
-      import "./modules/notificationPopup/"
-      import "./modules/onScreenDisplay/"
-      import "./modules/onScreenKeyboard/"
-      import "./modules/overview/"
-      import "./modules/screenCorners/"
-      import "./modules/session/"
-      import "./modules/sidebarLeft/"
-      import "./modules/sidebarRight/"
-
-      import QtQuick
-      import QtQuick.Controls
-      import QtQuick.Layouts
-      import QtQuick.Window
-      import Quickshell
-
-      ShellRoot {
-          // Module enable flags
-          property bool enableBackground: true
-          property bool enableBar: ${lib.boolToString cfg.modules.bar}
-          property bool enableOverview: ${lib.boolToString cfg.modules.overview}
-          property bool enableSidebarLeft: ${lib.boolToString cfg.modules.sidebarLeft}
-          property bool enableSidebarRight: ${lib.boolToString cfg.modules.sidebarRight}
-          property bool enableNotificationPopup: ${lib.boolToString cfg.modules.notifications}
-          property bool enableMediaControls: ${lib.boolToString cfg.modules.mediaControls}
-          property bool enableOnScreenDisplayBrightness: ${lib.boolToString cfg.modules.onScreenDisplay}
-          property bool enableOnScreenDisplayVolume: ${lib.boolToString cfg.modules.onScreenDisplay}
-          property bool enableCheatsheet: ${lib.boolToString cfg.modules.cheatsheet}
-          property bool enableDock: ${lib.boolToString cfg.modules.dock}
-          property bool enableScreenCorners: ${lib.boolToString cfg.modules.screenCorners}
-          property bool enableOnScreenKeyboard: ${lib.boolToString cfg.modules.onScreenKeyboard}
-          property bool enableSession: ${lib.boolToString cfg.modules.session}
-          property bool enableLock: ${lib.boolToString cfg.modules.lock}
-          property bool enableReloadPopup: true
-
-          // LazyLoaders for all modules - matching original dots-hyprland structure
-          LazyLoader { active: enableBackground; component: Background {} }
-          LazyLoader { active: enableBar; component: Bar {} }
-          LazyLoader { active: enableCheatsheet; component: Cheatsheet {} }
-          LazyLoader { active: enableDock; component: Dock {} }
-          LazyLoader { active: enableLock; component: Lock {} }
-          LazyLoader { active: enableMediaControls; component: MediaControls {} }
-          LazyLoader { active: enableNotificationPopup; component: NotificationPopup {} }
-          LazyLoader { active: enableOnScreenDisplayBrightness; component: OnScreenDisplayBrightness {} }
-          LazyLoader { active: enableOnScreenDisplayVolume; component: OnScreenDisplayVolume {} }
-          LazyLoader { active: enableOnScreenKeyboard; component: OnScreenKeyboard {} }
-          LazyLoader { active: enableOverview; component: Overview {} }
-          LazyLoader { active: enableReloadPopup; component: ReloadPopup {} }
-          LazyLoader { active: enableScreenCorners; component: ScreenCorners {} }
-          LazyLoader { active: enableSession; component: Session {} }
-          LazyLoader { active: enableSidebarLeft; component: SidebarLeft {} }
-          LazyLoader { active: enableSidebarRight; component: SidebarRight {} }
-
-          // Configuration properties
-          property real scaling: ${toString cfg.scaling}
-          property string language: "${cfg.language}"
-
-          // Custom configuration
-          ${cfg.customConfig}
-      }
-    '';
+    # Use the original working shell.qml directly instead of generating our own
+    home.file.".configstaging/quickshell/shell.qml".source = ../../configs/quickshell/ii/shell.qml;
 
     # Stage other configuration files in ~/.configstaging/quickshell/
     home.file.".configstaging/quickshell/GlobalStates.qml".source = ../../configs/quickshell/ii/GlobalStates.qml;

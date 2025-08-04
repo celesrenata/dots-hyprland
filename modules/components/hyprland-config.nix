@@ -360,7 +360,7 @@ in
     home.file.".config/hypr/env.conf".text = processTemplate (builtins.readFile ../../configs/hypr/env.conf.template) templateVars;
     home.file.".config/hypr/execs.conf".text = processTemplate (builtins.readFile ../../configs/hypr/execs.conf.template) templateVars;
     home.file.".config/hypr/general.conf".text = processTemplate (builtins.readFile ../../configs/hypr/general.conf.template) templateVars;
-    home.file.".config/hypr/keybinds.conf".text = processTemplate (builtins.readFile ../../configs/hypr/keybinds.conf.template) templateVars;
+    home.file.".config/hypr/keybinds.conf".source = ../keybinds.conf;
     home.file.".config/hypr/colors.conf".text = processTemplate (builtins.readFile ../../configs/hypr/colors.conf.template) templateVars;
     home.file.".config/hypr/rules.conf".text = processTemplate (builtins.readFile ../../configs/hypr/rules.conf.template) templateVars;
     
@@ -397,13 +397,16 @@ in
       wireplumber playerctl
       
       # System tools
-      brightnessctl tesseract
+      brightnessctl tesseract wtype ydotool gammastep
       
       # Math and utilities (for zoom.sh)
       bc jq
       
       # Notifications
       libnotify
+      
+      # Launchers and menus
+      wofi
       
       # Authentication
       gnome-keyring kdePackages.polkit-kde-agent-1
