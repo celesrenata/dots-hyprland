@@ -166,8 +166,8 @@ in
       ) cfg.windowRules;
     };
 
-    # Terminal configuration (foot)
-    programs.foot = mkIf (mainCfg.applications.terminal == "foot") {
+    # Terminal configuration (foot) - simplified without checking terminal type
+    programs.foot = mkIf mainCfg.components.hyprland {
       settings = {
         main = {
           alpha = cfg.terminal.opacity / 100.0;
