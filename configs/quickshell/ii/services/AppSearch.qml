@@ -1,7 +1,7 @@
 pragma Singleton
 
 import qs.modules.common
-import qs.modules.common.functions
+import qs.modules.common.functions as Functions
 import Quickshell
 
 /**
@@ -53,12 +53,12 @@ Singleton {
         .sort((a, b) => a.name.localeCompare(b.name))
 
     readonly property var preppedNames: list.map(a => ({
-        name: Fuzzy.prepare(`${a.name} `),
+        name: Functions.Fuzzy.prepare(`${a.name} `),
         entry: a
     }))
 
     readonly property var preppedIcons: list.map(a => ({
-        name: Fuzzy.prepare(`${a.icon} `),
+        name: Functions.Fuzzy.prepare(`${a.icon} `),
         entry: a
     }))
 
@@ -66,14 +66,14 @@ Singleton {
         if (root.sloppySearch) {
             const results = list.map(obj => ({
                 entry: obj,
-                score: Levendist.computeScore(obj.name.toLowerCase(), search.toLowerCase())
+                score: Functions.Levendist.computeScore(obj.name.toLowerCase(), search.toLowerCase())
             })).filter(item => item.score > root.scoreThreshold)
                 .sort((a, b) => b.score - a.score)
             return results
                 .map(item => item.entry)
         }
 
-        return Fuzzy.go(search, preppedNames, {
+        return Functions.Fuzzy.go(search, preppedNames, {
             all: true,
             key: "name"
         }).map(r => {
@@ -132,7 +132,7 @@ Singleton {
 
 
         // Search in desktop entries
-        const iconSearchResults = Fuzzy.go(str, preppedIcons, {
+        const iconSearchResults = Functions.Fuzzy.go(str, preppedIcons, {
             all: true,
             key: "name"
         }).map(r => {
