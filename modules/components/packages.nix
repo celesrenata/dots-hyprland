@@ -85,7 +85,6 @@ in
           papirus-icon-theme
           material-design-icons
           font-awesome
-          gnome.adwaita-icon-theme
         ])) ++
         
         # Extra packages
