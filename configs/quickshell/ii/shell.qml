@@ -74,6 +74,9 @@ ShellRoot {
     LazyLoader { active: enableSession; component: Session {} }
     LazyLoader { active: enableSidebarLeft; component: SidebarLeft {} }
     LazyLoader { active: enableSidebarRight; component: SidebarRight {} }
-    LazyLoader { active: enableSettings; component: Qt.createComponent("./modules/settings/Settings.qml") {} }
+    LazyLoader { 
+        active: enableSettings
+        source: "./modules/settings/Settings.qml"
+    }
 }
 
