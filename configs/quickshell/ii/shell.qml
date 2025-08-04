@@ -48,6 +48,7 @@ ShellRoot {
     property bool enableSession: true
     property bool enableSidebarLeft: true
     property bool enableSidebarRight: true
+    property bool enableSettings: true  // New: Settings window
 
     // Force initialization of some singletons
     Component.onCompleted: {
@@ -73,5 +74,6 @@ ShellRoot {
     LazyLoader { active: enableSession; component: Session {} }
     LazyLoader { active: enableSidebarLeft; component: SidebarLeft {} }
     LazyLoader { active: enableSidebarRight; component: SidebarRight {} }
+    LazyLoader { active: enableSettings; component: Qt.createComponent("./modules/settings/Settings.qml") {} }
 }
 

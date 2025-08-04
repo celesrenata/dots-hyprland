@@ -14,6 +14,7 @@ in
     ./components/quickshell.nix  # Consolidated Quickshell system (replaces quickshell-widgets.nix)
     ./components/session-management.nix  # Proper session management
     ./components/ai.nix  # ✅ ENABLED: AI integration (Phase 3)
+    ./components/transparency.nix  # ✅ NEW: Transparency and blur configuration (AGS compatibility)
     # ./components/customization.nix  # Temporarily disabled for testing
   ];
 
