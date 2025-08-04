@@ -115,6 +115,8 @@ in
         Restart = "on-failure";
         RestartSec = 1;
         TimeoutStopSec = 10;
+        # Set working directory to the quickshell config directory
+        WorkingDirectory = "${config.xdg.configHome}/quickshell/ii";
         # Import the entire user session environment
         ExecStartPre = "${pkgs.systemd}/bin/systemctl --user import-environment";
         # Inherit the user session environment
