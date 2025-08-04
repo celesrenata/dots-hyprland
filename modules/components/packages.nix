@@ -38,14 +38,19 @@ in
   config = mkIf cfg.enable {
     home.packages = let
       selectedPackages = 
-        # Core utilities - minimal set for testing
+        # Core utilities - expanded for system monitoring
         (optionals cfg.sets.core (with pkgs; [
           curl wget git ripgrep jq
+          htop btop procps # System monitoring
+          playerctl # MPRIS control
+          libnotify # Notifications
         ])) ++
         
-        # Basic Hyprland packages - minimal set
+        # Hyprland ecosystem packages
         (optionals cfg.sets.hyprland (with pkgs; [
           wl-clipboard
+          hyprpicker hypridle hyprlock
+          xdg-desktop-portal-hyprland
         ])) ++
         
         # Widget system packages - minimal set
@@ -53,9 +58,11 @@ in
           fuzzel libnotify
         ])) ++
         
-        # Audio packages - minimal set
+        # Audio packages - expanded for MPRIS and system monitoring
         (optionals cfg.sets.audio (with pkgs; [
           pavucontrol playerctl
+          pipewire wireplumber
+          pulseaudio # for pactl command
         ])) ++
         
         # Application packages - minimal set
@@ -63,9 +70,22 @@ in
           foot # just one terminal for testing
         ])) ++
         
-        # Font packages - minimal set
+        # Font packages - expanded with icon themes
         (optionals cfg.sets.fonts (with pkgs; [
           noto-fonts
+          adwaita-icon-theme
+          papirus-icon-theme
+          material-design-icons
+          font-awesome
+        ])) ++
+        
+        # Theme packages - icon and cursor themes
+        (optionals cfg.sets.themes (with pkgs; [
+          adwaita-icon-theme
+          papirus-icon-theme
+          material-design-icons
+          font-awesome
+          gnome.adwaita-icon-theme
         ])) ++
         
         # Extra packages
