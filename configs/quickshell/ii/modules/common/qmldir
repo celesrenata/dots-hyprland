@@ -1,4 +1,5 @@
 module qs.modules.common
+singleton Appearance 1.0 Appearance.qml
 singleton Config 1.0 Config.qml
-singleton Globals 1.0 Globals.qml
-singleton Quickshell 1.0 Quickshell.qml
+singleton Directories 1.0 Directories.qml
+singleton Persistent 1.0 Persistent.qml
