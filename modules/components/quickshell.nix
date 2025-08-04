@@ -117,6 +117,10 @@ in
           "QT_SCALE_FACTOR=${toString cfg.scaling}"
           "QT_QUICK_CONTROLS_STYLE=Basic"
           "QML2_IMPORT_PATH=${config.xdg.configHome}/quickshell/ii:${pkgs.qt6.qtdeclarative}/lib/qt-6/qml:${pkgs.qt6.qt5compat}/lib/qt-6/qml"
+          "PATH=${lib.makeBinPath (with pkgs; [ coreutils findutils gnused gnugrep gawk curl wget jq playerctl htop ])}"
+          "XDG_CONFIG_HOME=${config.xdg.configHome}"
+          "XDG_DATA_HOME=${config.xdg.dataHome}"
+          "XDG_CACHE_HOME=${config.xdg.cacheHome}"
         ];
       };
 
