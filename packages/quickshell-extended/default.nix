@@ -19,7 +19,6 @@ quickshell.overrideAttrs (oldAttrs: {
   buildInputs = oldAttrs.buildInputs ++ (with qt6; [
     # Additional Qt modules required by end-4 configuration
     qt5compat  # Provides Qt5Compat.GraphicalEffects
-    qtgraphicaleffects  # Additional graphical effects
     qtquickcontrols2  # Enhanced controls
     qtmultimedia  # Media support
   ]);
@@ -27,7 +26,6 @@ quickshell.overrideAttrs (oldAttrs: {
   # Ensure Qt modules are available at runtime
   qtWrapperArgs = [
     "--prefix QML2_IMPORT_PATH : ${qt6.qt5compat}/${qt6.qtbase.qtQmlPrefix}"
-    "--prefix QML2_IMPORT_PATH : ${qt6.qtgraphicaleffects}/${qt6.qtbase.qtQmlPrefix}"
     "--prefix QML2_IMPORT_PATH : ${qt6.qtquickcontrols2}/${qt6.qtbase.qtQmlPrefix}"
     "--prefix QML2_IMPORT_PATH : ${qt6.qtmultimedia}/${qt6.qtbase.qtQmlPrefix}"
   ];
