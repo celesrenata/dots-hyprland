@@ -10,8 +10,15 @@ import Quickshell
  */
 Singleton {
     id: root
-    property bool sloppySearch: Config.options?.search.sloppy ?? false
+    property bool sloppySearch: false // Default value, will be updated when Config is ready
     property real scoreThreshold: 0.2
+    
+    // Update sloppySearch when Config becomes available
+    Component.onCompleted: {
+        if (Config && Config.options && Config.options.search) {
+            sloppySearch = Config.options.search.sloppy || false
+        }
+    }
     property var substitutions: ({
         "code-url-handler": "visual-studio-code",
         "Code": "visual-studio-code",
