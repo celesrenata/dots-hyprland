@@ -108,7 +108,7 @@ in
 
       Service = {
         Type = "simple";
-        ExecStart = "${pkgs.quickshell}/bin/quickshell -c ~/.config/quickshell/ii/shell.qml";
+        ExecStart = "${pkgs.quickshell}/bin/quickshell -c ~/.config/quickshell/ii";
         ExecReload = "${pkgs.coreutils}/bin/kill -SIGUSR2 $MAINPID";
         Restart = "on-failure";
         RestartSec = 1;
@@ -116,6 +116,7 @@ in
         Environment = [
           "QT_SCALE_FACTOR=${toString cfg.scaling}"
           "QT_QUICK_CONTROLS_STYLE=Basic"
+          "QML2_IMPORT_PATH=${config.xdg.configHome}/quickshell/ii/modules"
         ];
       };
 
