@@ -58,7 +58,7 @@ ShellRoot {
         MaterialThemeLoader.reapplyTheme()
     }
 
-    LazyLoader { active: enableBar; component: Bar {} }
+    LazyLoader { active: false; component: Bar {} }  // Temporarily disabled
     LazyLoader { active: enableBackground; component: Background {} }
     LazyLoader { active: enableCheatsheet; component: Cheatsheet {} }
     LazyLoader { active: enableDock && Config.options.dock.enable; component: Dock {} }
