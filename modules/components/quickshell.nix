@@ -162,7 +162,7 @@ in
       
       # Rsync from staging to actual config directory
       if [ -d ~/.configstaging/quickshell ]; then
-        ${pkgs.rsync}/bin/rsync -azL --no-perms ~/.configstaging/quickshell/ ~/.config/quickshell/ 2>/dev/null || true
+        ${pkgs.rsync}/bin/rsync -azL --no-perms --ignore-times ~/.configstaging/quickshell/ ~/.config/quickshell/ 2>/dev/null || true
         echo "Quickshell configuration synced from staging"
       fi
     '';
