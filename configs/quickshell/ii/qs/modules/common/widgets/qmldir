@@ -1,4 +1,5 @@
 module qs.modules.common.widgets
+
 ButtonGroup 1.0 ButtonGroup.qml
 CircularProgress 1.0 CircularProgress.qml
 CliphistImage 1.0 CliphistImage.qml

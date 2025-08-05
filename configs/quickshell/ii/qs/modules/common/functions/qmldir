@@ -1,4 +1,5 @@
 module qs.modules.common.functions
+
 ColorUtils 1.0 ColorUtils.qml
 FileUtils 1.0 FileUtils.qml
 Fuzzy 1.0 Fuzzy.qml
