@@ -34,12 +34,11 @@ QML2_IMPORT_PATH="..." quickshell
 # Result: Loads through all services, stops at Config object reference
 ```
 
-## Remaining Issue
+## Latest Issue (MAJOR PROGRESS!)
 
-**File**: `@services/AppSearch.qml[17:5]`
-**Error**: `Non-existent attached object`
-**Line**: `property bool sloppySearch: Config.options?.search.sloppy ?? false`
-**Issue**: Config object not properly attached/available
+**File**: `@services/BooruResponseData.qml`
+**Error**: `qmldir defines type as singleton, but no pragma Singleton found in type BooruResponseData`
+**Issue**: Service files registered as singletons in qmldir but missing `pragma Singleton` directive
 
 ## Progress Summary
 
@@ -49,6 +48,16 @@ QML2_IMPORT_PATH="..." quickshell
 ✅ Widget type loading - FIXED
 ✅ Service dependency chain - FIXED
 ✅ QtPositioning module - FIXED
-❌ Config object reference - CURRENT ISSUE
+✅ Config object reference - FIXED! (Minimal Config singleton working)
+✅ AppSearch Config.options access - FIXED!
+❌ Service singleton pragma directives - CURRENT ISSUE
 
-We've achieved a complete breakthrough in QML module loading!
+## Major Breakthrough: Config Singleton Fixed!
+
+The Config object reference issue has been completely resolved:
+- Created minimal Config.qml with proper singleton structure
+- Fixed qmldir registration with `singleton` keyword
+- AppSearch now loads successfully and accesses Config.options.search.sloppy
+- Service chain now progresses through Audio → Battery → Bluetooth → Booru
+
+Next: Add `pragma Singleton` to service files that need it.
