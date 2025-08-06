@@ -3,6 +3,7 @@ pragma ComponentBehavior: Bound
 
 import qs.modules.common.functions as CF
 import qs.modules.common
+import qs
 import Quickshell
 import Quickshell.Io
 import Quickshell.Wayland

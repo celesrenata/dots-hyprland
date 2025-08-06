@@ -27,7 +27,7 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import QtQuick.Window
 import Quickshell
-import qs
+import "./ii/qs/"
 
 ShellRoot {
     // Enable/disable modules here. False = not loaded at all, so rest assured
@@ -48,6 +48,7 @@ ShellRoot {
     property bool enableSession: true
     property bool enableSidebarLeft: true
     property bool enableSidebarRight: true
+    // property bool enableSettings: true  // Temporarily disabled
 
     // Force initialization of some singletons
     Component.onCompleted: {
