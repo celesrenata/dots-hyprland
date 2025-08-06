@@ -26,6 +26,24 @@ QtObject {
             property real scale: 1.0
         }
         
+        // DateTime options for DateTime service
+        property QtObject time: QtObject {
+            property string format: "hh:mm"
+            property string dateFormat: "dddd, dd/MM"
+        }
+        
+        // Background options for Background.qml
+        property QtObject background: QtObject {
+            property int clockX: 100
+            property int clockY: 100
+            property string wallpaperPath: "/home/user/wallpaper.jpg"
+        }
+        
+        // Cliphist options
+        property QtObject cliphist: QtObject {
+            property int arbitraryRaceConditionDelay: 100
+        }
+        
         // General UI options
         property QtObject ui: QtObject {
             property var screenList: []
