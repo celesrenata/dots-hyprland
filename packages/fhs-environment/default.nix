@@ -3,12 +3,12 @@
 # the original dots-hyprland can run unchanged
 { lib
 , pkgs
-, buildFHSUserEnv
+, buildFHSEnv  # Updated from buildFHSUserEnv
 , quickshell
 , dots-hyprland-source ? null
 }:
 
-buildFHSUserEnv {
+buildFHSEnv {  # Updated from buildFHSUserEnv
   name = "dots-hyprland-fhs";
   
   # All the packages dots-hyprland expects in traditional locations
@@ -54,19 +54,19 @@ buildFHSUserEnv {
     
     # Fonts (critical for UI)
     noto-fonts
-    noto-fonts-cjk
+    noto-fonts-cjk-sans  # Updated from noto-fonts-cjk
     noto-fonts-emoji
     font-awesome
     material-design-icons
-    (nerdfonts.override { fonts = [ "JetBrainsMono" "FiraCode" ]; })
+    nerd-fonts.jetbrains-mono  # Updated from nerdfonts override
+    nerd-fonts.fira-code
     
     # Theme and color tools
     matugen
     
     # Development tools
     git
-    nodejs
-    npm
+    nodejs  # includes npm
     
     # System integration
     glib # for gsettings
