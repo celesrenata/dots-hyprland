@@ -1,5 +1,3 @@
-import qs.modules.common
-import qs
 import QtQuick
 import Quickshell
 import Quickshell.Hyprland
@@ -28,7 +26,8 @@ Singleton {
         Quickshell.execDetached(["hyprctl", "keyword", "cursor:zoom_factor", root.screenZoom.toString()]);
     }
     Behavior on screenZoom {
-        animation: Appearance.animation.elementMoveFast.numberAnimation.createObject(this)
+        NumberAnimation { duration: 200; easing.type: Easing.OutCubic }
+        // animation: Appearance.animation.elementMoveFast.numberAnimation.createObject(this)
     }
 
     // When user is not reluctant while pressing super, they probably don't need to see workspace numbers
@@ -38,7 +37,7 @@ Singleton {
 
     Timer {
         id: workspaceShowNumbersTimer
-        interval: Config.options.bar.workspaces.showNumberDelay
+        interval: 500 // Config.options.bar.workspaces.showNumberDelay
         // interval: 0
         repeat: false
         onTriggered: {
