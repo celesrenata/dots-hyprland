@@ -39,12 +39,13 @@ buildFHSEnv {  # Updated from buildFHSUserEnv
     # Core utilities (from PKGBUILD analysis)
     axel bc coreutils cliphist cmake curl rsync wget ripgrep jq meson xdg-user-dirs
     
-    # Python environment for scripts
-    python3
-    python3Packages.pip
-    python3Packages.requests
-    python3Packages.pillow
-    python3Packages.numpy
+    # Python environment for scripts - use python3WithPackages for proper integration
+    (python3.withPackages (ps: with ps; [
+      requests
+      pillow
+      numpy
+      pip
+    ]))
     
     # Audio system
     pipewire
@@ -116,6 +117,16 @@ buildFHSEnv {  # Updated from buildFHSUserEnv
   runScript = pkgs.writeScript "dots-hyprland-start" ''
     #!/bin/bash
     set -e
+    
+    echo "🚀 dots-hyprland FHS environment ready!"
+    echo "📁 Config: $XDG_CONFIG_HOME"
+    echo "📦 Data: $XDG_DATA_HOME"
+    
+    # If arguments provided, run them instead of quickshell
+    if [[ $# -gt 0 ]]; then
+      echo "🎯 Running: $@"
+      exec "$@"
+    fi
     
     echo "🎯 Starting dots-hyprland in FHS environment..."
     
