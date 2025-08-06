@@ -1,7 +1,7 @@
 pragma Singleton
 
 import qs.modules.common
-import qs.modules.common.functions as Functions
+import qs.modules.common.functions
 import Quickshell
 
 /**
@@ -10,15 +10,8 @@ import Quickshell
  */
 Singleton {
     id: root
-    property bool sloppySearch: false // Default value, will be updated when Config is ready
+    property bool sloppySearch: Config.options?.search.sloppy ?? false
     property real scoreThreshold: 0.2
-    
-    // Update sloppySearch when Config becomes available
-    Component.onCompleted: {
-        if (Config && Config.options && Config.options.search) {
-            sloppySearch = Config.options.search.sloppy || false
-        }
-    }
     property var substitutions: ({
         "code-url-handler": "visual-studio-code",
         "Code": "visual-studio-code",
@@ -32,19 +25,19 @@ Singleton {
     })
     property var regexSubstitutions: [
         {
-            "pattern": "^steam_app_(\\d+)$",
+            "regex": /^steam_app_(\d+)$/,
             "replace": "steam_icon_$1"
         },
         {
-            "pattern": "Minecraft.*",
+            "regex": /Minecraft.*/,
             "replace": "minecraft"
         },
         {
-            "pattern": ".*polkit.*",
+            "regex": /.*polkit.*/,
             "replace": "system-lock-screen"
         },
         {
-            "pattern": "gcr.prompter",
+            "regex": /gcr.prompter/,
             "replace": "system-lock-screen"
         }
     ]
@@ -53,12 +46,12 @@ Singleton {
         .sort((a, b) => a.name.localeCompare(b.name))
 
     readonly property var preppedNames: list.map(a => ({
-        name: Functions.Fuzzy.prepare(`${a.name} `),
+        name: Fuzzy.prepare(`${a.name} `),
         entry: a
     }))
 
     readonly property var preppedIcons: list.map(a => ({
-        name: Functions.Fuzzy.prepare(`${a.icon} `),
+        name: Fuzzy.prepare(`${a.icon} `),
         entry: a
     }))
 
@@ -66,14 +59,14 @@ Singleton {
         if (root.sloppySearch) {
             const results = list.map(obj => ({
                 entry: obj,
-                score: Functions.Levendist.computeScore(obj.name.toLowerCase(), search.toLowerCase())
+                score: Levendist.computeScore(obj.name.toLowerCase(), search.toLowerCase())
             })).filter(item => item.score > root.scoreThreshold)
                 .sort((a, b) => b.score - a.score)
             return results
                 .map(item => item.entry)
         }
 
-        return Functions.Fuzzy.go(search, preppedNames, {
+        return Fuzzy.go(search, preppedNames, {
             all: true,
             key: "name"
         }).map(r => {
@@ -105,9 +98,8 @@ Singleton {
         // Regex substitutions
         for (let i = 0; i < regexSubstitutions.length; i++) {
             const substitution = regexSubstitutions[i];
-            const regex = new RegExp(substitution.pattern);
             const replacedName = str.replace(
-                regex,
+                substitution.regex,
                 substitution.replace,
             );
             if (replacedName != str) return replacedName;
@@ -132,7 +124,7 @@ Singleton {
 
 
         // Search in desktop entries
-        const iconSearchResults = Functions.Fuzzy.go(str, preppedIcons, {
+        const iconSearchResults = Fuzzy.go(str, preppedIcons, {
             all: true,
             key: "name"
         }).map(r => {

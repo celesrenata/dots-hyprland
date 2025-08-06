@@ -48,7 +48,6 @@ ShellRoot {
     property bool enableSession: true
     property bool enableSidebarLeft: true
     property bool enableSidebarRight: true
-    // property bool enableSettings: true  // Temporarily disabled
 
     // Force initialization of some singletons
     Component.onCompleted: {
