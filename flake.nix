@@ -1,5 +1,5 @@
 {
-  description = "NixOS adaptation of end-4's dots-hyprland using FHS environment";
+  description = "NixOS adaptation of end-4's dots-hyprland using installer replication";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
@@ -7,55 +7,91 @@
       url = "github:nix-community/home-manager";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    hyprland.url = "github:hyprwm/Hyprland";
     
     # Official quickshell flake (our breakthrough discovery!)
     quickshell.url = "github:outfoxxed/quickshell";
     
-    # Original dots-hyprland source (unchanged)
+    # Original dots-hyprland source (unchanged) - THE KEY INSIGHT
     dots-hyprland = {
       url = "github:end-4/dots-hyprland";
-      flake = false; # Use as source only
+      flake = false; # Use as source only, don't build
     };
   };
 
-  outputs = { self, nixpkgs, home-manager, hyprland, quickshell, dots-hyprland, ... }:
+  outputs = { self, nixpkgs, home-manager, quickshell, dots-hyprland, ... }:
     let
       system = "x86_64-linux";
       pkgs = import nixpkgs {
         inherit system;
-        overlays = [
-          self.overlays.default
-          hyprland.overlays.default
-        ];
+        overlays = [ self.overlays.default ];
       };
     in
     {
       # Package overlays
       overlays.default = final: prev: {
-        # Make quickshell available
+        # Make quickshell available from official flake
         quickshell = quickshell.packages.${system}.default;
-        
-        # Our FHS environment
-        dots-hyprland-fhs = final.callPackage ./packages/fhs-environment {
-          inherit quickshell;
-          dots-hyprland-source = dots-hyprland;
-        };
-        
-        # Test utilities
-        test-fhs-environment = final.callPackage ./packages/fhs-environment/test.nix { };
       };
 
       # Packages
       packages.${system} = {
-        # FHS environment for dots-hyprland
-        fhs-environment = pkgs.dots-hyprland-fhs;
+        # Test utilities
+        test-python-env = pkgs.writeShellScriptBin "test-python-env" ''
+          #!/usr/bin/env bash
+          echo "🧪 Testing dots-hyprland Python environment..."
+          
+          VENV_PATH="$HOME/.local/state/quickshell/.venv"
+          
+          if [[ ! -d "$VENV_PATH" ]]; then
+            echo "❌ Virtual environment not found at $VENV_PATH"
+            echo "💡 Run: home-manager switch"
+            exit 1
+          fi
+          
+          source "$VENV_PATH/bin/activate"
+          python -c "
+import sys
+print(f'✅ Python {sys.version}')
+
+try:
+    import material_color_utilities
+    print('✅ material-color-utilities')
+except ImportError:
+    print('❌ material-color-utilities')
+
+try:
+    import materialyoucolor
+    print('✅ materialyoucolor')
+except ImportError:
+    print('❌ materialyoucolor')
+
+try:
+    import pywayland
+    print('✅ pywayland')
+except ImportError:
+    print('❌ pywayland')
+"
+          deactivate
+        '';
         
-        # Test script
-        test-fhs = pkgs.test-fhs-environment;
+        # Test quickshell with clean config
+        test-quickshell = pkgs.writeShellScriptBin "test-quickshell" ''
+          #!/usr/bin/env bash
+          echo "🧪 Testing quickshell with dots-hyprland config..."
+          
+          if [[ ! -d "$HOME/.config/quickshell" ]]; then
+            echo "❌ No quickshell configuration found"
+            echo "💡 Run: home-manager switch"
+            exit 1
+          fi
+          
+          cd "$HOME/.config/quickshell"
+          echo "🚀 Starting quickshell (timeout 10s)..."
+          timeout 10 ${pkgs.quickshell}/bin/quickshell 2>&1 | head -20
+        '';
         
-        # Default package
-        default = pkgs.dots-hyprland-fhs;
+        # Default package for easy testing
+        default = self.packages.${system}.test-python-env;
       };
 
       # Development shell
@@ -65,29 +101,47 @@
           nil
           git
           
-          # Our packages for testing
-          dots-hyprland-fhs
-          test-fhs-environment
+          # Our test utilities
+          self.packages.${system}.test-python-env
+          self.packages.${system}.test-quickshell
         ];
         
         shellHook = ''
-          echo "🚀 dots-hyprland FHS development environment"
+          echo "🚀 dots-hyprland installer replication development environment"
           echo ""
-          echo "Available commands:"
-          echo "  nix run .#fhs-environment  - Start dots-hyprland in FHS"
-          echo "  nix run .#test-fhs         - Test FHS environment"
-          echo "  test-fhs-environment       - Test FHS environment (direct)"
+          echo "📋 Available commands:"
+          echo "  test-python-env    - Test Python virtual environment"
+          echo "  test-quickshell    - Test quickshell with config"
+          echo "  home-manager switch - Apply configuration"
           echo ""
-          echo "Current branch: $(git branch --show-current)"
+          echo "🎯 Current approach: Direct installer replication"
+          echo "📁 Branch: $(git branch --show-current)"
+          echo ""
+          echo "🔑 Key insight: Python venv is critical, not FHS!"
         '';
       };
 
-      # Home Manager module (coming next)
+      # Home Manager module
       homeManagerModules.default = import ./modules/home-manager.nix;
       homeManagerModules.dots-hyprland = self.homeManagerModules.default;
 
-      # NixOS module (coming next)
-      nixosModules.default = import ./modules/nixos.nix;
-      nixosModules.dots-hyprland = self.nixosModules.default;
+      # Example Home Manager configuration
+      homeConfigurations.example = home-manager.lib.homeManagerConfiguration {
+        inherit pkgs;
+        modules = [
+          self.homeManagerModules.default
+          {
+            home.username = "user";
+            home.homeDirectory = "/home/user";
+            home.stateVersion = "24.05";
+            
+            programs.dots-hyprland = {
+              enable = true;
+              source = dots-hyprland; # Clean upstream source
+              packageSet = "essential"; # or "minimal" or "all"
+            };
+          }
+        ];
+      };
     };
 }
