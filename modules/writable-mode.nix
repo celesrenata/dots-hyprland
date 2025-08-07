@@ -240,7 +240,7 @@ in
   };
 
   config = mkIf cfg.enable {
-    # Stage all configuration files to the staging directory
+    # Stage all configuration files and install scripts
     home.file = 
       let
         # Get all config directories from source
@@ -268,77 +268,77 @@ in
             recursive = true;
           };
         };
+        
+        # Scripts and utilities
+        scriptEntries = {
+          ".local/bin/${cfg.setupScript}" = {
+            source = setupScript;
+            executable = true;
+          };
+          
+          ".local/bin/dots-hyprland-status" = {
+            source = statusScript;
+            executable = true;
+          };
+          
+          "${cfg.stagingDir}/README.md" = {
+            text = ''
+              # dots-hyprland Configuration Staging
+              
+              This directory contains the staged configuration files from the original dots-hyprland repository.
+              
+              ## Setup
+              
+              Run the setup script to copy/symlink these files to your ~/.config directory:
+              
+              ```bash
+              ~/.local/bin/${cfg.setupScript}
+              ```
+              
+              ## Mode: ${if cfg.symlinkMode then "Symlink" else "Copy"}
+              
+              ${if cfg.symlinkMode then ''
+              **Symlink Mode**: Files will be symlinked to ~/.config/
+              - Changes to files in staging will reflect immediately
+              - Useful for development and testing
+              - Files remain managed by Home Manager
+              '' else ''
+              **Copy Mode**: Files will be copied to ~/.config/
+              - You can modify the copied files freely
+              - Changes won't affect the staging area
+              - Full user control over configuration
+              ''}
+              
+              ## Status
+              
+              Check the current status with:
+              
+              ```bash
+              dots-hyprland-status
+              ```
+              
+              ## Files Staged
+              
+              - quickshell/ - Widget system configuration
+              - hypr/ - Hyprland window manager configuration  
+              - fish/ - Fish shell configuration
+              - foot/ - Foot terminal configuration
+              - kitty/ - Kitty terminal configuration
+              - fuzzel/ - Fuzzel launcher configuration
+              - wlogout/ - Logout menu configuration
+              - .local/share/icons/ - Custom icons
+              - .local/share/konsole/ - Konsole profiles
+              
+              ## Python Environment
+              
+              The Python virtual environment is managed separately and will be created at:
+              `~/.local/state/quickshell/.venv`
+              
+              Test it with: `test-dots-hyprland-venv`
+            '';
+          };
+        };
       in
-      stagingEntries // localShareEntries;
-
-    # Install the setup script
-    home.file.".local/bin/${cfg.setupScript}" = {
-      source = setupScript;
-      executable = true;
-    };
-    
-    # Install the status script
-    home.file.".local/bin/dots-hyprland-status" = {
-      source = statusScript;
-      executable = true;
-    };
-    
-    # Create a README in the staging directory
-    home.file."${cfg.stagingDir}/README.md" = {
-      text = ''
-        # dots-hyprland Configuration Staging
-        
-        This directory contains the staged configuration files from the original dots-hyprland repository.
-        
-        ## Setup
-        
-        Run the setup script to copy/symlink these files to your ~/.config directory:
-        
-        ```bash
-        ~/.local/bin/${cfg.setupScript}
-        ```
-        
-        ## Mode: ${if cfg.symlinkMode then "Symlink" else "Copy"}
-        
-        ${if cfg.symlinkMode then ''
-        **Symlink Mode**: Files will be symlinked to ~/.config/
-        - Changes to files in staging will reflect immediately
-        - Useful for development and testing
-        - Files remain managed by Home Manager
-        '' else ''
-        **Copy Mode**: Files will be copied to ~/.config/
-        - You can modify the copied files freely
-        - Changes won't affect the staging area
-        - Full user control over configuration
-        ''}
-        
-        ## Status
-        
-        Check the current status with:
-        
-        ```bash
-        dots-hyprland-status
-        ```
-        
-        ## Files Staged
-        
-        - quickshell/ - Widget system configuration
-        - hypr/ - Hyprland window manager configuration  
-        - fish/ - Fish shell configuration
-        - foot/ - Foot terminal configuration
-        - kitty/ - Kitty terminal configuration
-        - fuzzel/ - Fuzzel launcher configuration
-        - wlogout/ - Logout menu configuration
-        - .local/share/icons/ - Custom icons
-        - .local/share/konsole/ - Konsole profiles
-        
-        ## Python Environment
-        
-        The Python virtual environment is managed separately and will be created at:
-        `~/.local/state/quickshell/.venv`
-        
-        Test it with: `test-dots-hyprland-venv`
-      '';
-    };
+      stagingEntries // localShareEntries // scriptEntries;
   };
 }

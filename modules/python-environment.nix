@@ -27,16 +27,39 @@ let
       rm -rf "$VENV_PATH"
     fi
     
+    # Set up proper library path for Python packages (64-bit only)
+    export LD_LIBRARY_PATH="${lib.makeLibraryPath (with pkgs; [
+      gcc-unwrapped.lib
+      glibc
+      zlib
+      libffi
+      openssl
+      bzip2
+      xz.out
+      ncurses
+      readline
+      sqlite
+    ])}"
+    
+    # Clear Python path to avoid conflicts
+    export PYTHONPATH=""
+    export PYTHONDONTWRITEBYTECODE=1
+    
+    echo "📚 Library path: $LD_LIBRARY_PATH"
+    
     # Create virtual environment with Python 3.12 (installer requirement)
     echo "🏗️  Creating Python 3.12 virtual environment..."
     ${pkgs.python312}/bin/python -m venv "$VENV_PATH" --prompt .venv
     
     # Activate and install exact requirements from installer
-    echo "📦 Installing Python packages..."
+    echo "📦 Installing Python packages with proper library linking..."
     source "$VENV_PATH/bin/activate"
     
+    # Upgrade pip first
+    pip install --upgrade pip
+    
     # Install exact versions from scriptdata/requirements.txt
-    pip install --no-cache-dir \
+    pip install --no-cache-dir --force-reinstall \
       build==1.2.2.post1 \
       cffi==1.17.1 \
       libsass==0.23.0 \
@@ -54,10 +77,44 @@ let
       setuptools-scm==8.1.0 \
       wheel==0.45.1
     
+    # Test critical imports
+    echo "🧪 Testing critical package imports..."
+    python -c "
+import sys
+print(f'Python: {sys.version}')
+
+tests = [
+    ('materialyoucolor', 'materialyoucolor'),
+    ('material_color_utilities', 'material_color_utilities'),
+    ('sass', 'sass'),
+    ('numpy', 'numpy'),
+    ('PIL', 'PIL'),
+    ('pywayland.client', 'pywayland.client'),
+    ('psutil', 'psutil'),
+    ('setproctitle', 'setproctitle')
+]
+
+working = 0
+for name, module in tests:
+    try:
+        __import__(module)
+        print(f'✅ {name}')
+        working += 1
+    except Exception as e:
+        print(f'❌ {name}: {e}')
+
+print(f'📊 {working}/{len(tests)} packages working')
+if working == len(tests):
+    print('🎉 All critical packages imported successfully!')
+else:
+    print('⚠️  Some packages failed - may need additional system libraries')
+"
+    
     deactivate
     
     echo "✅ Python virtual environment setup complete!"
     echo "🔗 Environment variable: ILLOGICAL_IMPULSE_VIRTUAL_ENV=$VENV_PATH"
+    echo "📚 Library path configured for NixOS compatibility"
   '';
   
   # Test script to verify the Python environment works
@@ -123,6 +180,20 @@ in
       sassc
       opencv4
       
+      # Critical system libraries for Python packages (64-bit)
+      gcc-unwrapped.lib  # Provides proper libstdc++.so.6
+      glibc
+      zlib
+      libffi
+      openssl
+      
+      # Additional libraries that might be needed
+      bzip2
+      xz
+      ncurses
+      readline
+      sqlite
+      
       # Development tools
       pkg-config
       cairo
@@ -142,9 +213,25 @@ in
       ''
     );
 
-    # Set critical environment variable
+    # Set critical environment variable and library paths
     home.sessionVariables = {
       ILLOGICAL_IMPULSE_VIRTUAL_ENV = cfg.venvPath;
+      # Ensure Python packages can find system libraries (64-bit only)
+      LD_LIBRARY_PATH = lib.makeLibraryPath (with pkgs; [
+        gcc-unwrapped.lib
+        glibc
+        zlib
+        libffi
+        openssl
+        bzip2
+        xz.out
+        ncurses
+        readline
+        sqlite
+      ]);
+      # Additional environment variables for Python
+      PYTHONPATH = "";  # Clear to avoid conflicts
+      PYTHONDONTWRITEBYTECODE = "1";  # Prevent .pyc files
     };
   };
 }
