@@ -31,6 +31,11 @@ let
     # quickshell-git -> provided by quickshell flake input
     translate-shell
     wlogout
+    
+    # Qt modules needed for quickshell widgets
+    kdePackages.qt5compat  # For Qt5Compat.GraphicalEffects
+    kdePackages.qtdeclarative  # For QML
+    kdePackages.qtwayland  # For Wayland support
   ];
 
   # illogical-impulse-hyprland PKGBUILD

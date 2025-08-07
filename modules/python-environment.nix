@@ -232,6 +232,13 @@ in
       # Additional environment variables for Python
       PYTHONPATH = "";  # Clear to avoid conflicts
       PYTHONDONTWRITEBYTECODE = "1";  # Prevent .pyc files
+      
+      # QML import paths for quickshell
+      QML2_IMPORT_PATH = lib.concatStringsSep ":" (with pkgs; [
+        "${kdePackages.qt5compat}/lib/qt-6/qml"
+        "${kdePackages.qtdeclarative}/lib/qt-6/qml"
+        "${kdePackages.qtwayland}/lib/qt-6/qml"
+      ]);
     };
   };
 }
