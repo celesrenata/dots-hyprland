@@ -107,7 +107,7 @@ in
   };
 
   config = mkIf cfg.enable {
-    # Install system Python and required build dependencies
+    # Install system Python and required build dependencies + test script
     home.packages = with pkgs; [
       python312
       python312Packages.pip
@@ -128,6 +128,11 @@ in
       cairo
       gdk-pixbuf
       glib
+      
+      # Test script
+      (writeShellScriptBin "test-dots-hyprland-venv" ''
+        ${testVenvScript}
+      '')
     ];
 
     # Set up virtual environment on Home Manager activation
@@ -141,12 +146,5 @@ in
     home.sessionVariables = {
       ILLOGICAL_IMPULSE_VIRTUAL_ENV = cfg.venvPath;
     };
-    
-    # Add test script to user packages
-    home.packages = [
-      (pkgs.writeShellScriptBin "test-dots-hyprland-venv" ''
-        ${testVenvScript}
-      '')
-    ];
   };
 }

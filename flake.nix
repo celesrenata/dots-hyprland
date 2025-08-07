@@ -90,8 +90,40 @@ except ImportError:
           timeout 10 ${pkgs.quickshell}/bin/quickshell 2>&1 | head -20
         '';
         
+        # Mode comparison utility
+        compare-modes = pkgs.writeShellScriptBin "compare-modes" ''
+          #!/usr/bin/env bash
+          
+          echo "🔍 dots-hyprland Configuration Modes"
+          echo "===================================="
+          echo ""
+          echo "📋 Available modes:"
+          echo ""
+          echo "1. 🔒 DECLARATIVE MODE"
+          echo "   • Files managed by Home Manager"
+          echo "   • Read-only configuration"
+          echo "   • Automatic updates with 'home-manager switch'"
+          echo "   • Best for: Set-and-forget users"
+          echo "   • Build: nix build .#homeConfigurations.declarative.activationPackage"
+          echo ""
+          echo "2. ✏️  WRITABLE MODE"
+          echo "   • Files staged to ~/.configstaging"
+          echo "   • User copies/modifies configuration"
+          echo "   • Full control over files"
+          echo "   • Best for: Customization and development"
+          echo "   • Build: nix build .#homeConfigurations.writable.activationPackage"
+          echo ""
+          echo "🚀 Quick start:"
+          echo "   # For declarative mode:"
+          echo "   nix build .#homeConfigurations.declarative.activationPackage && ./result/activate"
+          echo ""
+          echo "   # For writable mode:"
+          echo "   nix build .#homeConfigurations.writable.activationPackage && ./result/activate"
+          echo "   ~/.local/bin/initialSetup.sh"
+        '';
+        
         # Default package for easy testing
-        default = self.packages.${system}.test-python-env;
+        default = self.packages.${system}.compare-modes;
       };
 
       # Development shell
@@ -101,23 +133,28 @@ except ImportError:
           nil
           git
           
-          # Our test utilities
+          # Our utilities
           self.packages.${system}.test-python-env
           self.packages.${system}.test-quickshell
+          self.packages.${system}.compare-modes
         ];
         
         shellHook = ''
           echo "🚀 dots-hyprland installer replication development environment"
           echo ""
           echo "📋 Available commands:"
-          echo "  test-python-env    - Test Python virtual environment"
-          echo "  test-quickshell    - Test quickshell with config"
-          echo "  home-manager switch - Apply configuration"
+          echo "  compare-modes         - Compare declarative vs writable modes"
+          echo "  test-python-env       - Test Python virtual environment"
+          echo "  test-quickshell       - Test quickshell with config"
           echo ""
-          echo "🎯 Current approach: Direct installer replication"
+          echo "🎯 Build configurations:"
+          echo "  nix build .#homeConfigurations.declarative.activationPackage"
+          echo "  nix build .#homeConfigurations.writable.activationPackage"
+          echo ""
+          echo "🔑 Key insight: Both modes use the same Python venv and packages!"
           echo "📁 Branch: $(git branch --show-current)"
           echo ""
-          echo "🔑 Key insight: Python venv is critical, not FHS!"
+          echo "💡 Run 'compare-modes' to see the differences between approaches"
         '';
       };
 
@@ -125,23 +162,57 @@ except ImportError:
       homeManagerModules.default = import ./modules/home-manager.nix;
       homeManagerModules.dots-hyprland = self.homeManagerModules.default;
 
-      # Example Home Manager configuration
-      homeConfigurations.example = home-manager.lib.homeManagerConfiguration {
-        inherit pkgs;
-        modules = [
-          self.homeManagerModules.default
-          {
-            home.username = "user";
-            home.homeDirectory = "/home/user";
-            home.stateVersion = "24.05";
-            
-            programs.dots-hyprland = {
-              enable = true;
-              source = dots-hyprland; # Clean upstream source
-              packageSet = "essential"; # or "minimal" or "all"
-            };
-          }
-        ];
+      # Example Home Manager configurations
+      homeConfigurations = {
+        # Declarative approach (read-only, managed by Home Manager)
+        declarative = home-manager.lib.homeManagerConfiguration {
+          inherit pkgs;
+          modules = [
+            self.homeManagerModules.default
+            {
+              home.username = "celes";
+              home.homeDirectory = "/home/celes";
+              home.stateVersion = "24.05";
+              
+              programs.dots-hyprland = {
+                enable = true;
+                source = dots-hyprland;
+                packageSet = "essential";
+                # Declarative mode (default)
+                mode = "declarative";
+              };
+            }
+          ];
+        };
+        
+        # Writable approach (staging + user modification)
+        writable = home-manager.lib.homeManagerConfiguration {
+          inherit pkgs;
+          modules = [
+            self.homeManagerModules.default
+            {
+              home.username = "celes";
+              home.homeDirectory = "/home/celes";
+              home.stateVersion = "24.05";
+              
+              programs.dots-hyprland = {
+                enable = true;
+                source = dots-hyprland;
+                packageSet = "essential";
+                # Writable mode - stages to .configstaging
+                mode = "writable";
+                writable = {
+                  stagingDir = ".configstaging";
+                  setupScript = "initialSetup.sh";
+                  backupExisting = true;
+                };
+              };
+            }
+          ];
+        };
+        
+        # Alias for backward compatibility
+        example = self.homeConfigurations.declarative;
       };
     };
 }
