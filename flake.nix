@@ -158,8 +158,8 @@ except ImportError:
         '';
       };
 
-      # Home Manager module
-      homeManagerModules.default = import ./modules/home-manager.nix;
+      # Home Manager module (PATCHED VERSION with root:/ imports)
+      homeManagerModules.default = import ./modules/home-manager-patched.nix;
       homeManagerModules.dots-hyprland = self.homeManagerModules.default;
 
       # Example Home Manager configurations
