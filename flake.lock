@@ -3,11 +3,11 @@
     "dots-hyprland": {
       "flake": false,
       "locked": {
-        "lastModified": 1754228452,
-        "narHash": "sha256-awy5a4loFhX0GWBsd+xGztt4p3ORdwbdVEbKhSnapEw=",
+        "lastModified": 1754586091,
+        "narHash": "sha256-GJPfReLLHrMAuXcn4etidYN4j08rZO634ozjXYKufpo=",
         "owner": "end-4",
         "repo": "dots-hyprland",
-        "rev": "f8d162d9952371b05e0b09572aab03cf3dee1804",
+        "rev": "1f8a7be34e58823fbdb77ef08c4c5d2574b8afdf",
         "type": "github"
       },
       "original": {

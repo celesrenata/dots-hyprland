@@ -12,6 +12,7 @@ in
     ./python-environment.nix
     ./configuration.nix
     ./writable-mode.nix
+    ./components/quickshell-service.nix
   ];
 
   options.programs.dots-hyprland = {
@@ -99,6 +100,14 @@ in
       enable = true;
       source = cfg.source;
       inherit (cfg.writable) stagingDir setupScript backupExisting symlinkMode;
+    };
+    
+    # Enable quickshell service (works with both modes)
+    programs.dots-hyprland.quickshell-service = {
+      enable = true;
+      autoStart = true;
+      restartOnFailure = true;
+      logLevel = "info";
     };
 
     # Set critical environment variable (required for both modes)
