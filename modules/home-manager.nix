@@ -103,7 +103,7 @@ in
     };
     
     # Enable quickshell service (works with both modes)
-    programs.dots-hyprland.quickshell-service = {
+    programs.dots-hyprland.quickshell = {
       enable = true;
       autoStart = true;
       restartOnFailure = true;

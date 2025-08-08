@@ -113,12 +113,18 @@ let
   
 in
 {
-  options.programs.dots-hyprland.quickshell-service = {
+  options.programs.dots-hyprland.quickshell = {
     enable = mkEnableOption "Quickshell service with staging integration";
     
     autoStart = mkEnableOption "Auto-start with Hyprland session" // { default = true; };
     
     restartOnFailure = mkEnableOption "Restart service on failure" // { default = true; };
+    
+    scaling = mkOption {
+      type = types.float;
+      default = 1.0;
+      description = "UI scaling factor";
+    };
     
     logLevel = mkOption {
       type = types.enum [ "debug" "info" "warning" "error" ];
