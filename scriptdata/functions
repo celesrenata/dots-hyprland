@@ -1,5 +1,4 @@
-#!/usr/bin/env bash
-# This is NOT a script for execution, but for loading functions, so NOT need execution permission.
+# This is NOT a script for execution, but for loading functions, so NOT need execution permission or shebang.
 # NOTE that you NOT need to `cd ..' because the `$0' is NOT this file, but the script file which will source this file.
 
 # The script that use this file should have two lines on its top as follows:
@@ -38,7 +37,8 @@ function x() {
   if "$@";then cmdstatus=0;else cmdstatus=1;fi # 0=normal; 1=failed; 2=failed but ignored
   while [ $cmdstatus == 1 ] ;do
     echo -e "\e[31m[$0]: Command \"\e[32m$@\e[31m\" has failed."
-    echo -e "You may need to resolve the problem manually BEFORE repeating this command.\e[0m"
+    echo -e "You may need to resolve the problem manually BEFORE repeating this command."
+    echo -e "[Tip] If a certain package is failing to install, try installing it separately in another terminal.\e[0m"
     echo "  r = Repeat this command (DEFAULT)"
     echo "  e = Exit now"
     echo "  i = Ignore this error and continue (your setup might not work correctly)"
@@ -71,4 +71,15 @@ function prevent_sudo_or_root(){
   case $(whoami) in
     root)echo -e "\e[31m[$0]: This script is NOT to be executed with sudo or as root. Aborting...\e[0m";exit 1;;
   esac
+}
+
+
+function backup_configs() {
+  local backup_dir="$BACKUP_DIR"
+  mkdir -p "$backup_dir"
+  echo "Backing up $XDG_CONFIG_HOME to $backup_dir/config_backup"
+  rsync -av --progress "$XDG_CONFIG_HOME/" "$backup_dir/config_backup/"
+  
+  echo "Backing up $HOME/.local to $backup_dir/local_backup"
+  rsync -av --progress "$HOME/.local/" "$backup_dir/local_backup/"
 }

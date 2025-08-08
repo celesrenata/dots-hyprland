@@ -5,18 +5,22 @@ pkgdesc='Illogical Impulse Fonts and Theming Dependencies'
 arch=(any)
 license=(None)
 depends=(
-	adw-gtk3-git
-	qt5ct
-	qt5-wayland
-	fontconfig
-	ttf-readex-pro
-	ttf-jetbrains-mono-nerd
-	ttf-material-symbols-variable-git
-	ttf-space-mono-nerd
-	ttf-rubik-vf
+  adw-gtk-theme-git
+  breeze
+  breeze-plus
+  darkly-bin
+  eza
+  fish
+  fontconfig
+  kde-material-you-colors
+  kitty
+  matugen-bin
+  otf-space-grotesk
+  starship
   ttf-gabarito-git
-	fish
-	foot
-	starship
+  ttf-jetbrains-mono-nerd
+  ttf-material-symbols-variable-git
+  ttf-readex-pro
+  ttf-rubik-vf
+  ttf-twemoji
 )
-
