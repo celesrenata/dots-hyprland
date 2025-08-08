@@ -215,9 +215,37 @@ in
     # Note: touchegg service needs to be enabled at system level
     # Add this to your NixOS configuration: services.touchegg.enable = true;
     
-    # Install touchegg configuration
+    # Install touchegg configuration (both user and system locations)
     xdg.configFile."touchegg/touchegg.conf" = {
       text = cfg.config;
+    };
+    
+    # Also create system config that touchegg service can read
+    # Note: This requires the touchegg service to be enabled at system level
+    home.activation.toucheggSystemConfig = lib.hm.dag.entryAfter ["writeBoundary"] ''
+      echo "📄 Creating system-wide touchegg configuration..."
+      $DRY_RUN_CMD sudo mkdir -p /etc/touchegg
+      $DRY_RUN_CMD sudo cp ${config.xdg.configHome}/touchegg/touchegg.conf /etc/touchegg/touchegg.conf
+      echo "✅ System touchegg config updated"
+    '';
+    
+    # Create touchegg client service (required for gesture execution)
+    systemd.user.services.touchegg-client = {
+      Unit = {
+        Description = "Touchegg Client";
+        After = [ "graphical-session.target" ];
+      };
+
+      Service = {
+        Type = "simple";
+        ExecStart = "${pkgs.touchegg}/bin/touchegg --client";
+        Restart = "on-failure";
+        RestartSec = 3;
+      };
+
+      Install = {
+        WantedBy = [ "default.target" ];
+      };
     };
     
     # Install touchegg and management scripts
