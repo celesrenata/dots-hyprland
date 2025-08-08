@@ -13,6 +13,7 @@ in
     ./configuration.nix
     ./writable-mode.nix
     ./components/quickshell-service.nix
+    ./components/touchegg.nix
   ];
 
   options.programs.dots-hyprland = {
@@ -108,6 +109,11 @@ in
       autoStart = true;
       restartOnFailure = true;
       logLevel = "info";
+    };
+    
+    # Enable touchegg gesture support
+    programs.dots-hyprland.touchegg = {
+      enable = true;
     };
 
     # Set critical environment variable (required for both modes)
