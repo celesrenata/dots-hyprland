@@ -257,6 +257,10 @@ in
           };
         }) configDirs);
         
+        # Add NixOS-specific patches
+        nixosPatches = {
+        };
+        
         # Add .local/share files to staging
         localShareEntries = {
           "${cfg.stagingDir}/.local/share/icons" = {
@@ -339,6 +343,6 @@ in
           };
         };
       in
-      stagingEntries // localShareEntries // scriptEntries;
+      stagingEntries // localShareEntries // scriptEntries // nixosPatches;
   };
 }

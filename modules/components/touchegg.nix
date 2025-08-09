@@ -17,7 +17,7 @@ in
         <touchégg>
           <settings>
             <property name="animation_delay">150</property>
-            <property name="action_execute_threshold">20</property>
+            <property name="action_execute_threshold">80</property>
             <property name="color">auto</property>
             <property name="borderColor">auto</property>
           </settings>
@@ -67,30 +67,12 @@ in
               </action>
             </gesture>
             
-            <!-- 3-finger swipe left: Next workspace -->
-            <gesture type="SWIPE" fingers="3" direction="LEFT">
-              <action type="RUN_COMMAND">
-                <command>hyprctl dispatch workspace +1</command>
-                <repeat>false</repeat>
-                <animation>NONE</animation>
-                <on>begin</on>
-              </action>
-            </gesture>
-            
-            <!-- 3-finger swipe right: Previous workspace -->
-            <gesture type="SWIPE" fingers="3" direction="RIGHT">
-              <action type="RUN_COMMAND">
-                <command>hyprctl dispatch workspace -1</command>
-                <repeat>false</repeat>
-                <animation>NONE</animation>
-                <on>begin</on>
-              </action>
-            </gesture>
+            <!-- Note: 3-finger left/right swipes removed - handled by Hyprland's built-in workspace_swipe -->
             
             <!-- 3-finger swipe up: Show overview -->
             <gesture type="SWIPE" fingers="3" direction="UP">
               <action type="RUN_COMMAND">
-                <command>pkill fuzzel || fuzzel</command>
+                <command>hyprctl dispatch global quickshell:overviewToggle</command>
                 <repeat>false</repeat>
                 <animation>NONE</animation>
                 <on>begin</on>

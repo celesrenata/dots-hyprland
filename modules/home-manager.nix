@@ -14,7 +14,6 @@ in
     ./writable-mode.nix
     ./components/quickshell-service.nix
     ./components/touchegg.nix
-    ./components/custom-keybinds.nix
   ];
 
   options.programs.dots-hyprland = {
@@ -118,9 +117,6 @@ in
     };
     
     # Enable custom keybindings
-    programs.dots-hyprland.custom-keybinds = {
-      enable = true;
-    };
 
     # Set critical environment variable (required for both modes)
     home.sessionVariables = {

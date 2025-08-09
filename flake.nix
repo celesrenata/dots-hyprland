@@ -13,7 +13,7 @@
     
     # Original dots-hyprland source (unchanged) - THE KEY INSIGHT
     dots-hyprland = {
-      url = "github:end-4/dots-hyprland";
+      url = "git+file:///home/celes/sources/celesrenata/dots-hyprland?ref=quickshell";
       flake = false; # Use as source only, don't build
     };
   };

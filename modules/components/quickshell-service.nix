@@ -97,6 +97,30 @@ let
     export QT_QUICK_CONTROLS_STYLE="Basic"
     export QT_QUICK_FLICKABLE_WHEEL_DECELERATION="10000"
     
+    # Ensure PATH includes user applications - CRITICAL for app launching
+    export PATH="${config.home.profileDirectory}/bin:/run/wrappers/bin:${config.home.homeDirectory}/.nix-profile/bin:/etc/profiles/per-user/${config.home.username}/bin:/nix/var/nix/profiles/default/bin:/run/current-system/sw/bin:$PATH"
+    export XDG_DATA_DIRS="${config.home.profileDirectory}/share:${config.home.homeDirectory}/.nix-profile/share:/etc/profiles/per-user/${config.home.username}/share:/nix/var/nix/profiles/default/share:/run/current-system/sw/share:$XDG_DATA_DIRS"
+    
+    # Create application launcher wrapper that quickshell can use
+    LAUNCHER_WRAPPER="$HOME/.cache/dots-hyprland/app-launcher"
+    mkdir -p "$(dirname "$LAUNCHER_WRAPPER")"
+    cat > "$LAUNCHER_WRAPPER" << 'EOF'
+#!/usr/bin/env bash
+# Application launcher wrapper for quickshell
+# Ensures proper PATH and environment for launched applications
+
+# Use the same PATH that quickshell has
+export PATH="${config.home.profileDirectory}/bin:/run/wrappers/bin:${config.home.homeDirectory}/.nix-profile/bin:/etc/profiles/per-user/${config.home.username}/bin:/nix/var/nix/profiles/default/bin:/run/current-system/sw/bin"
+export XDG_DATA_DIRS="${config.home.profileDirectory}/share:${config.home.homeDirectory}/.nix-profile/share:/etc/profiles/per-user/${config.home.username}/share:/nix/var/nix/profiles/default/share:/run/current-system/sw/share"
+
+# Launch the application
+exec "$@"
+EOF
+    chmod +x "$LAUNCHER_WRAPPER"
+    
+    # Export the launcher wrapper path for quickshell to use
+    export DOTS_HYPRLAND_APP_LAUNCHER="$LAUNCHER_WRAPPER"
+    
     # Verify Python virtual environment
     if [[ ! -d "$ILLOGICAL_IMPULSE_VIRTUAL_ENV" ]]; then
         warn "Python virtual environment not found at $ILLOGICAL_IMPULSE_VIRTUAL_ENV"
@@ -106,6 +130,7 @@ let
     log "🎯 Starting quickshell with dots-hyprland configuration"
     log "📁 Config: $CONFIG_DIR/quickshell/ii/shell.qml"
     log "🐍 Python venv: $ILLOGICAL_IMPULSE_VIRTUAL_ENV"
+    log "🚀 App launcher: $LAUNCHER_WRAPPER"
     
     # Start quickshell
     exec ${workingQuickshell}/bin/quickshell -p "$CONFIG_DIR/quickshell/ii/shell.qml"
@@ -184,7 +209,7 @@ in
         TimeoutStartSec = 30;
         TimeoutStopSec = 10;
         
-        # Environment variables
+        # Environment variables - include full user environment
         Environment = [
           "QT_SCALE_FACTOR=${toString cfg.scaling}"
           "QT_QUICK_CONTROLS_STYLE=Basic"
@@ -195,6 +220,12 @@ in
             else if cfg.logLevel == "error" then "*.critical=true"
             else "*.info=true"
           }"
+          # Include user's full PATH so applications can be launched
+          "PATH=${config.home.profileDirectory}/bin:/run/wrappers/bin:${config.home.homeDirectory}/.nix-profile/bin:/etc/profiles/per-user/${config.home.username}/bin:/nix/var/nix/profiles/default/bin:/run/current-system/sw/bin"
+          # Include XDG data directories for application discovery
+          "XDG_DATA_DIRS=${config.home.profileDirectory}/share:${config.home.homeDirectory}/.nix-profile/share:/etc/profiles/per-user/${config.home.username}/share:/nix/var/nix/profiles/default/share:/run/current-system/sw/share"
+          # Application launcher wrapper path
+          "DOTS_HYPRLAND_APP_LAUNCHER=%h/.cache/dots-hyprland/app-launcher"
         ];
         
         # Working directory
