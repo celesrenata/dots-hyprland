@@ -200,7 +200,6 @@ in
         bind = SUPER, F, fullscreen
         
         # Quickshell integration
-        bind = SUPER, Space, exec, quickshell -c overview
         bind = SUPER, slash, exec, quickshell -c cheatsheet
         bind = SUPER SHIFT, S, exec, quickshell -c screenshot
         
