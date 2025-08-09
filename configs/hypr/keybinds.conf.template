@@ -4,8 +4,8 @@
 #!
 ##! Shell
 # These absolutely need to be on top, or they won't work consistently
-bindid = Control, Space, Toggle overview, global, quickshell:overviewToggleRelease # Toggle overview/launcher
-bind = Control, Space, exec, @QUICKSHELL_BIN@ -c $qsConfig ipc call TEST_ALIVE || pkill fuzzel || @FUZZEL_BIN@ # [hidden] Launcher (fallback)
+bindid = Alt, Space, Toggle overview, global, quickshell:overviewToggleRelease # Toggle overview/launcher
+bind = Alt, Space, exec, @QUICKSHELL_BIN@ -c $qsConfig ipc call TEST_ALIVE || pkill fuzzel || @FUZZEL_BIN@ # [hidden] Launcher (fallback)
 binditn = Super, catchall, global, quickshell:overviewToggleReleaseInterrupt # [hidden]
 bind = Ctrl, Super_L, global, quickshell:overviewToggleReleaseInterrupt # [hidden]
 bind = Super, mouse:272, global, quickshell:overviewToggleReleaseInterrupt # [hidden]
