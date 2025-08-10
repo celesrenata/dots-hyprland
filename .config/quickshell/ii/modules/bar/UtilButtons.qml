@@ -25,7 +25,7 @@ Item {
             visible: Config.options.bar.utilButtons.showScreenSnip
             sourceComponent: CircleUtilButton {
                 Layout.alignment: Qt.AlignVCenter
-                onClicked: Quickshell.execDetached(["qs", "-p", Quickshell.shellPath("screenshot.qml")])
+                onClicked: Quickshell.execDetached(["quickshell", "-p", Quickshell.shellPath("screenshot.qml")])
                 MaterialSymbol {
                     horizontalAlignment: Qt.AlignHCenter
                     fill: 1
