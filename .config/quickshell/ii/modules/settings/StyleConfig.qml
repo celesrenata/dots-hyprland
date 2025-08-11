@@ -163,7 +163,7 @@ ContentPage {
                 onValueChanged: {
                     if (!Config.options.terminal) Config.options.terminal = {};
                     Config.options.terminal.opacity = value;
-                    // Apply terminal opacity by modifying applycolor.sh and reapplying colors
+                    // Apply terminal opacity by modifying term_alpha and reapplying colors
                     Quickshell.execDetached(["bash", "-c", `sed -i 's/^term_alpha=.*/term_alpha=${value}/' ${Directories.scriptPath}/colors/applycolor.sh && ${Directories.scriptPath}/colors/applycolor.sh`]);
                 }
             }
