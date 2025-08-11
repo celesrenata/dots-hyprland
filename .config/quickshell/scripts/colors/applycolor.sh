@@ -163,6 +163,65 @@ apply_fuzzel() {
   cp "$STATE_DIR/user/generated/fuzzel/fuzzel.ini" "$XDG_CONFIG_HOME/fuzzel/fuzzel.ini"
 }
 
+# Function to convert hex color to RGB values
+dehex() {
+    local hex="$1"
+    # Remove # if present
+    hex="${hex#\#}"
+    # Convert to RGB
+    printf "%d, %d, %d" "0x${hex:0:2}" "0x${hex:2:2}" "0x${hex:4:2}"
+}
+
+apply_wofi() {
+    # Check if wofi template exists
+    if [ ! -f "$SCRIPT_DIR/wofi/style.css" ]; then
+        echo "Template file not found for Wofi colors. Skipping that."
+        return
+    fi
+    
+    # Copy template
+    mkdir -p "$XDG_CONFIG_HOME/wofi"
+    cp "$SCRIPT_DIR/wofi/style.css" "$XDG_CONFIG_HOME/wofi/style_new.css"
+    chmod +w "$XDG_CONFIG_HOME/wofi/style_new.css"
+    
+    # Apply colors (skip non-color variables like $darkmode, $transparent)
+    # Sort by variable name length (longest first) to avoid partial replacement issues
+    filtered_indices=()
+    for i in "${!colorlist[@]}"; do
+        # Skip variables that don't start with color names or contain special values
+        if [[ "${colorlist[$i]}" == *"darkmode"* ]] || [[ "${colorlist[$i]}" == *"transparent"* ]] || [[ "${colorlist[$i]}" == *"palette"* ]]; then
+            continue
+        fi
+        filtered_indices+=($i)
+    done
+    
+    # Sort indices by variable name length (longest first)
+    IFS=$'\n' sorted_indices=($(for idx in "${filtered_indices[@]}"; do
+        echo "${#colorlist[$idx]} $idx"
+    done | sort -rn | cut -d' ' -f2))
+    
+    # Apply hex colors (without # prefix) - use {{ $variable }} syntax
+    for i in "${sorted_indices[@]}"; do
+        # Remove $ prefix for the template pattern
+        color_name="${colorlist[$i]#\$}"
+        # Remove # prefix for wofi
+        color_value="${colorvalues[$i]}"
+        color_value="${color_value#\#}"
+        sed -i "s/{{ \$${color_name} }}/${color_value}/g" "$XDG_CONFIG_HOME/wofi/style_new.css"
+    done
+    
+    # Apply RGB colors - use {{ $variable-rgb }} syntax
+    for i in "${sorted_indices[@]}"; do
+        # Remove $ prefix for the template pattern
+        color_name="${colorlist[$i]#\$}"
+        # Convert to RGB
+        dehexed=$(dehex "${colorvalues[$i]}")
+        sed -i "s/{{ \$${color_name}-rgb }}/${dehexed}/g" "$XDG_CONFIG_HOME/wofi/style_new.css"
+    done
+    
+    mv "$XDG_CONFIG_HOME/wofi/style_new.css" "$XDG_CONFIG_HOME/wofi/style.css"
+}
+
 # Check if terminal theming is enabled in config
 CONFIG_FILE="$XDG_CONFIG_HOME/illogical-impulse/config.json"
 if [ -f "$CONFIG_FILE" ]; then
@@ -171,12 +230,14 @@ if [ -f "$CONFIG_FILE" ]; then
     apply_term &
     apply_foot &
     apply_fuzzel &
+    apply_wofi &
   fi
 else
   echo "Config file not found at $CONFIG_FILE. Applying terminal theming by default."
   apply_term &
   apply_foot &
   apply_fuzzel &
+  apply_wofi &
 fi
 
 # apply_qt & # Qt theming is already handled by kde-material-colors
