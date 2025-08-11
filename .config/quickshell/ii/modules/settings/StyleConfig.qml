@@ -151,34 +151,96 @@ ContentPage {
             }
         }
 
-        ContentSubsection {
-            title: Translation.tr("Terminal Effects")
+        Loader {
+            active: Config.ready
+            sourceComponent: ContentSubsection {
+                title: Translation.tr("Terminal Effects")
 
-            ConfigSpinBox {
-                text: Translation.tr("Terminal opacity (%)")
-                value: Config.options.terminal?.opacity ?? 100
-                from: 10
-                to: 100
-                stepSize: 5
-                onValueChanged: {
-                    if (!Config.options.terminal) Config.options.terminal = {};
-                    Config.options.terminal.opacity = value;
-                    // Apply terminal opacity by modifying term_alpha and reapplying colors
-                    Quickshell.execDetached(["bash", "-c", `sed -i 's/^term_alpha=.*/term_alpha=${value}/' ${Directories.scriptPath}/colors/applycolor.sh && ${Directories.scriptPath}/colors/applycolor.sh`]);
+                ConfigRow {
+                    uniform: true
+                    ConfigSwitch {
+                        text: Translation.tr("Transparency")
+                        checked: Config.options.terminal?.transparency ?? true
+                        
+                        // Add debugging for all possible events
+                        Component.onCompleted: {
+                            console.log("Transparency toggle created, initial checked:", checked);
+                            Quickshell.execDetached(["bash", "-c", "echo 'Toggle created with checked=" + checked + "' >> /tmp/transparency_debug.log"]);
+                        }
+                        
+                        onCheckedChanged: {
+                            // DEBUG: Check what Config.options actually contains
+                            console.log("Config.options:", JSON.stringify(Config.options));
+                            console.log("Config.options.terminal:", JSON.stringify(Config.options.terminal));
+                            
+                            // Skip config assignment for now and just make the toggle work
+                            let transparencyValue = checked ? "transparent" : "opaque";
+                            Quickshell.execDetached(["bash", "-c", `
+                                mkdir -p ~/.local/state/quickshell/user/generated/terminal && 
+                                echo "${transparencyValue}" > ~/.local/state/quickshell/user/generated/terminal/transparency && 
+                                ~/.config/quickshell/scripts/colors/applycolor.sh
+                            `]);
+                            
+                            console.log("Terminal transparency toggled:", checked, "->", transparencyValue);
+                        }
+                        
+                        onClicked: {
+                            console.log("onClicked triggered!");
+                            Quickshell.execDetached(["bash", "-c", "echo 'onClicked event' >> /tmp/transparency_debug.log"]);
+                        }
+                        
+                        onPressed: {
+                            console.log("onPressed triggered!");
+                            Quickshell.execDetached(["bash", "-c", "echo 'onPressed event' >> /tmp/transparency_debug.log"]);
+                        }
+                        
+                        onReleased: {
+                            console.log("onReleased triggered!");
+                            Quickshell.execDetached(["bash", "-c", "echo 'onReleased event' >> /tmp/transparency_debug.log"]);
+                        }
+                        
+                        StyledToolTip {
+                            visible: parent.hovered
+                            content: Translation.tr("Enable/disable terminal transparency\nApplies immediately to all terminals")
+                        }
+                    }
                 }
-            }
 
-            StyledText {
-                Layout.topMargin: 5
-                Layout.alignment: Qt.AlignHCenter
-                text: Translation.tr("Changes apply to new terminal instances")
-                font.pixelSize: Appearance.font.pixelSize.smaller
-                color: Appearance.colors.colSubtext
+                ConfigSpinBox {
+                    text: Translation.tr("Terminal opacity (%)")
+                    value: Config.options.terminal?.opacity ?? 80
+                    from: 10
+                    to: 100
+                    stepSize: 5
+                    
+                    onValueChanged: {
+                        if (!Config.options.terminal) Config.options.terminal = {};
+                        Config.options.terminal.opacity = value;
+                        
+                        // Update term_alpha in applycolor.sh and also save to opacity file for transparency system
+                        Quickshell.execDetached(["bash", "-c", `
+                            sed -i 's/^term_alpha=.*/term_alpha=${value}/' ~/.config/quickshell/scripts/colors/applycolor.sh && 
+                            mkdir -p ~/.local/state/quickshell/user/generated/terminal && 
+                            echo "${value}" > ~/.local/state/quickshell/user/generated/terminal/opacity && 
+                            ~/.config/quickshell/scripts/colors/applycolor.sh
+                        `]);
+                    }
+                }
+
+                StyledText {
+                    Layout.topMargin: 5
+                    Layout.alignment: Qt.AlignHCenter
+                    text: Translation.tr("Changes apply to new terminal instances")
+                    font.pixelSize: Appearance.font.pixelSize.smaller
+                    color: Appearance.colors.colSubtext
+                }
             }
         }
 
-        ContentSubsection {
-            title: Translation.tr("Blur Effects")
+        Loader {
+            active: Config.ready
+            sourceComponent: ContentSubsection {
+                title: Translation.tr("Blur Effects")
 
             ConfigRow {
                 uniform: true
@@ -250,6 +312,7 @@ ContentPage {
                     content: Translation.tr("Number of blur algorithm runs\nMore passes = more spread and power consumption\n4 is recommended")
                 }
             }
+        }
         }
 
         ContentSubsection {

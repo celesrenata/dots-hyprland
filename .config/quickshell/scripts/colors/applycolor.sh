@@ -9,7 +9,22 @@ CACHE_DIR="$XDG_CACHE_HOME/quickshell"
 STATE_DIR="$XDG_STATE_HOME/quickshell"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-term_alpha=80
+term_alpha=65
+
+# Check transparency setting and adjust term_alpha accordingly
+if [ -f "$STATE_DIR/user/generated/terminal/transparency" ]; then
+  transparency_mode=$(cat "$STATE_DIR/user/generated/terminal/transparency")
+  if [ "$transparency_mode" = "opaque" ]; then
+    term_alpha=100
+  else
+    # For transparent mode, use the opacity setting from config or default to 80
+    if [ -f "$STATE_DIR/user/generated/terminal/opacity" ]; then
+      term_alpha=$(cat "$STATE_DIR/user/generated/terminal/opacity")
+    else
+      term_alpha=80
+    fi
+  fi
+fi
 # sleep 0 # idk i wanted some delay or colors dont get applied properly
 if [ ! -d "$STATE_DIR"/user/generated ]; then
   mkdir -p "$STATE_DIR"/user/generated
