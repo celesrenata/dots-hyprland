@@ -84,15 +84,34 @@ apply_foot() {
   cp "$SCRIPT_DIR/foot/foot.ini" "$STATE_DIR/user/generated/foot/foot.ini"
   
   # Apply colors (skip non-color variables like $darkmode, $transparent)
+  # Sort by variable name length (longest first) to avoid partial replacement issues
+  # e.g., $term10 must be replaced before $term1 to avoid "AC72FF0" malformed colors
+  filtered_indices=()
   for i in "${!colorlist[@]}"; do
     # Skip variables that don't start with color names or contain special values
     if [[ "${colorlist[$i]}" == *"darkmode"* ]] || [[ "${colorlist[$i]}" == *"transparent"* ]] || [[ "${colorlist[$i]}" == *"palette"* ]]; then
       continue
     fi
+    filtered_indices+=($i)
+  done
+  
+  # Sort indices by variable name length (longest first)
+  IFS=$'\n' sorted_indices=($(for idx in "${filtered_indices[@]}"; do
+    echo "${#colorlist[$idx]} $idx"
+  done | sort -rn | cut -d' ' -f2))
+  
+  for i in "${sorted_indices[@]}"; do
     # Escape the $ in the color name for sed
     color_name="${colorlist[$i]//$/\\$}"
-    sed -i "s/${color_name}/${colorvalues[$i]#\\#}/g" "$STATE_DIR/user/generated/foot/foot.ini"
+    # Remove # prefix from color value for foot compatibility
+    color_value="${colorvalues[$i]}"
+    color_value="${color_value#\#}"  # Remove leading # if present
+    sed -i "s/${color_name}/${color_value}/g" "$STATE_DIR/user/generated/foot/foot.ini"
   done
+  
+  # After all color replacements, ensure no # prefixes remain in color values
+  # This handles any edge cases where # prefixes weren't removed properly
+  sed -i 's/=\s*#\([0-9A-Fa-f]\{6\}\)/=\1/g' "$STATE_DIR/user/generated/foot/foot.ini"
   
   # Convert term_alpha percentage to decimal for foot (e.g., 70 -> 0.7)
   foot_alpha=$(echo "scale=2; $term_alpha / 100" | bc)
