@@ -123,6 +123,46 @@ apply_foot() {
   cp "$STATE_DIR/user/generated/foot/foot.ini" "$XDG_CONFIG_HOME/foot/foot.ini"
 }
 
+apply_fuzzel() {
+  # Check if fuzzel template exists
+  if [ ! -f "$SCRIPT_DIR/fuzzel/fuzzel.ini" ]; then
+    echo "Template file not found for Fuzzel. Skipping that."
+    return
+  fi
+  
+  # Copy template
+  mkdir -p "$STATE_DIR/user/generated/fuzzel"
+  cp "$SCRIPT_DIR/fuzzel/fuzzel.ini" "$STATE_DIR/user/generated/fuzzel/fuzzel.ini"
+  
+  # Apply colors (skip non-color variables like $darkmode, $transparent)
+  # Sort by variable name length (longest first) to avoid partial replacement issues
+  filtered_indices=()
+  for i in "${!colorlist[@]}"; do
+    # Skip variables that don't start with color names or contain special values
+    if [[ "${colorlist[$i]}" == *"darkmode"* ]] || [[ "${colorlist[$i]}" == *"transparent"* ]] || [[ "${colorlist[$i]}" == *"palette"* ]]; then
+      continue
+    fi
+    filtered_indices+=($i)
+  done
+  
+  # Sort indices by variable name length (longest first)
+  IFS=$'\n' sorted_indices=($(for idx in "${filtered_indices[@]}"; do
+    echo "${#colorlist[$idx]} $idx"
+  done | sort -rn | cut -d' ' -f2))
+  
+  for i in "${sorted_indices[@]}"; do
+    # Escape the $ in the color name for sed
+    color_name="${colorlist[$i]//$/\\$}"
+    # Keep # prefix for fuzzel (unlike foot)
+    color_value="${colorvalues[$i]}"
+    sed -i "s/${color_name}/${color_value}/g" "$STATE_DIR/user/generated/fuzzel/fuzzel.ini"
+  done
+  
+  # Copy to actual config location
+  mkdir -p "$XDG_CONFIG_HOME/fuzzel"
+  cp "$STATE_DIR/user/generated/fuzzel/fuzzel.ini" "$XDG_CONFIG_HOME/fuzzel/fuzzel.ini"
+}
+
 # Check if terminal theming is enabled in config
 CONFIG_FILE="$XDG_CONFIG_HOME/illogical-impulse/config.json"
 if [ -f "$CONFIG_FILE" ]; then
@@ -130,11 +170,13 @@ if [ -f "$CONFIG_FILE" ]; then
   if [ "$enable_terminal" = "true" ]; then
     apply_term &
     apply_foot &
+    apply_fuzzel &
   fi
 else
   echo "Config file not found at $CONFIG_FILE. Applying terminal theming by default."
   apply_term &
   apply_foot &
+  apply_fuzzel &
 fi
 
 # apply_qt & # Qt theming is already handled by kde-material-colors
