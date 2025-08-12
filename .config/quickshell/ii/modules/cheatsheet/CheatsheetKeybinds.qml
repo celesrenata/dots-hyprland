@@ -5,14 +5,30 @@ import qs.modules.common.widgets
 import qs.modules.common.functions
 import QtQuick
 import QtQuick.Layouts
+import QtQuick.Controls
 
 Item {
     id: root
+    
+    // Constrain the content to reasonable size
+    implicitWidth: Math.min(rowLayout.implicitWidth, 1200)
+    implicitHeight: Math.min(rowLayout.implicitHeight, 800)
+    
     readonly property var keybinds: HyprlandKeybinds.keybinds
     property real spacing: 20
     property real titleSpacing: 7
-    implicitWidth: rowLayout.implicitWidth
-    implicitHeight: rowLayout.implicitHeight
+    
+    Component.onCompleted: {
+        console.log("[CheatsheetKeybinds] Component loaded")
+        console.log("[CheatsheetKeybinds] Keybinds object:", JSON.stringify(keybinds))
+        console.log("[CheatsheetKeybinds] Keybinds children length:", keybinds?.children?.length || 0)
+        console.log("[CheatsheetKeybinds] Keybinds keybinds length:", keybinds?.keybinds?.length || 0)
+    }
+    
+    onKeybindsChanged: {
+        console.log("[CheatsheetKeybinds] Keybinds changed:", JSON.stringify(keybinds))
+        console.log("[CheatsheetKeybinds] Children:", keybinds?.children?.length || 0, "Keybinds:", keybinds?.keybinds?.length || 0)
+    }
 
     property var keyBlacklist: ["Super_L"]
     property var keySubstitutions: ({
@@ -28,13 +44,22 @@ Item {
         // "Shift": "",
     })
 
-    RowLayout { // Keybind columns
-        id: rowLayout
-        spacing: root.spacing
-        Repeater {
-            model: keybinds.children
+    ScrollView {
+        id: scrollView
+        anchors.fill: parent
+        clip: true
+        
+        ScrollBar.horizontal.policy: ScrollBar.AlwaysOn
+        ScrollBar.vertical.policy: ScrollBar.AlwaysOn
+        
+        RowLayout { // Keybind columns
+            id: rowLayout
+            spacing: root.spacing
             
-            delegate: ColumnLayout { // Keybind sections
+            Repeater {
+                model: keybinds.keybinds
+                
+                delegate: ColumnLayout { // Keybind sections
                 spacing: root.spacing
                 required property var modelData
                 Layout.alignment: Qt.AlignTop
@@ -140,5 +165,5 @@ Item {
             
         }
     }
-    
+    }    
 }

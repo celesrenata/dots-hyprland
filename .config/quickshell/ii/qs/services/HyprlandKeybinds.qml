@@ -14,7 +14,7 @@ import Quickshell.Hyprland
  */
 Singleton {
     id: root
-    property string keybindParserPath: FileUtils.trimFileProtocol(`${Directories.scriptPath}/hyprland/get_keybinds_wrapper.sh`)
+    property string keybindParserPath: FileUtils.trimFileProtocol(`${Directories.config}/quickshell/ii/qs/services/get_keybinds_wrapper.sh`)
     property string defaultKeybindConfigPath: FileUtils.trimFileProtocol(`${Directories.config}/hypr/hyprland.conf`)
     property string userKeybindConfigPath: FileUtils.trimFileProtocol(`${Directories.config}/hypr/custom/keybinds.conf`)
     property var defaultKeybinds: {"children": []}
@@ -23,11 +23,26 @@ Singleton {
         children: [
             ...(defaultKeybinds.children ?? []),
             ...(userKeybinds.children ?? []),
+        ],
+        keybinds: [
+            {
+                name: "All Keybinds",
+                children: [
+                    {
+                        name: "Hyprland Keybinds",
+                        keybinds: [
+                            ...(defaultKeybinds.keybinds ?? []),
+                            ...(userKeybinds.keybinds ?? []),
+                        ]
+                    }
+                ],
+                keybinds: []
+            }
         ]
     })
 
     Component.onCompleted: {
-        console.log("HyprlandKeybinds service loaded");
+        console.log("HyprlandKeybinds service loaded - QS/SERVICES VERSION");
     }
 
     Connections {
@@ -48,10 +63,13 @@ Singleton {
         
         stdout: SplitParser {
             onRead: data => {
+                console.log("[HyprlandKeybinds] Raw data received, length:", data.length)
                 try {
                     root.defaultKeybinds = JSON.parse(data)
+                    console.log("[HyprlandKeybinds] Loaded", root.defaultKeybinds.keybinds?.length || 0, "keybinds from hyprland.conf")
                 } catch (e) {
                     console.error("[HyprlandKeybinds] Error parsing default keybinds:", e)
+                    console.error("[HyprlandKeybinds] Raw data was:", data.substring(0, 500))
                 }
             }
         }
