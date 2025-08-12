@@ -56,7 +56,6 @@ Singleton {
             }
         }
     }
-    }
 
     Process {
         id: getUserKeybinds
