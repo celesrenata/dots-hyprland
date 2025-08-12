@@ -99,13 +99,19 @@ Item {
             }
         }
 
+        // Separator
+        Rectangle {
+            color: Appearance.m3colors.m3outlineVariant
+            implicitHeight: 1
+            Layout.fillWidth: true
+        }
+
+
         // Device selector
-        RowLayout {
+        ButtonGroup {
             id: deviceSelectorRowLayout
             Layout.fillWidth: true
             Layout.fillHeight: false
-            uniformCellSizes: true
-
             AudioDeviceSelectorButton {
                 Layout.fillWidth: true
                 input: false

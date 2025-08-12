@@ -10,7 +10,7 @@ import Qt5Compat.GraphicalEffects
 MouseArea {
     id: root
 
-    property var bar: root.QsWindow.window
+    required property var bar
     required property SystemTrayItem item
     property bool targetMenuOpen: false
     property int trayItemWidth: Appearance.font.pixelSize.larger

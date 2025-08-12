@@ -21,7 +21,7 @@ MouseArea {
         
         MaterialSymbol {
             fill: 0
-            text: WeatherIcons.codeToName[Weather.data?.wCode] ?? "question_mark"
+            text: WeatherIcons.codeToName[Weather.data.wCode]
             iconSize: Appearance.font.pixelSize.large
             color: Appearance.colors.colOnLayer1
             Layout.alignment: Qt.AlignVCenter
@@ -31,7 +31,7 @@ MouseArea {
             visible: true
             font.pixelSize: Appearance.font.pixelSize.small
             color: Appearance.colors.colOnLayer1
-            text: Weather.data?.temp ?? "--°"
+            text: Weather.data.temp
             Layout.alignment: Qt.AlignVCenter
         }
     }

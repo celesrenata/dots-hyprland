@@ -1,5 +1,7 @@
+// From https://github.com/rafzby/circular-progressbar with modifications
+// License: LGPL-3.0 - A copy can be found in `licenses` folder of repo
+
 import QtQuick
-import QtQuick.Shapes
 import qs.modules.common
 
 /**
@@ -8,81 +10,88 @@ import qs.modules.common
 Item {
     id: root
 
-    property int implicitSize: 30
+    property int size: 30
     property int lineWidth: 2
     property real value: 0
-    property color colPrimary: Appearance.m3colors.m3onSecondaryContainer
-    property color colSecondary: Appearance.colors.colSecondaryContainer
-    property real gapAngle: 360 / 18
+    property color primaryColor: Appearance.m3colors.m3onSecondaryContainer
+    property color secondaryColor: Appearance.colors.colSecondaryContainer
+    property real gapAngle: Math.PI / 9
     property bool fill: false
     property int fillOverflow: 2
     property bool enableAnimation: true
-    property int animationDuration: 800
+    property int animationDuration: 1000
     property var easingType: Easing.OutCubic
 
-    implicitWidth: implicitSize
-    implicitHeight: implicitSize
+    width: size
+    height: size
 
-    property real degree: value * 360
-    property real centerX: root.width / 2
-    property real centerY: root.height / 2
-    property real arcRadius: root.implicitSize / 2 - root.lineWidth
-    property real startAngle: -90
+    signal animationFinished();
 
-    Behavior on degree {
-        enabled: root.enableAnimation
-        NumberAnimation {
-            duration: root.animationDuration
-            easing.type: root.easingType
-        }
-
+    onValueChanged: {
+        canvas.degree = value * 360;
+    }
+    onPrimaryColorChanged: {
+        canvas.requestPaint();
+    }
+    onSecondaryColorChanged: {
+        canvas.requestPaint();
     }
 
-    Loader {
-        active: root.fill
-        anchors.fill: parent
-        
-        sourceComponent: Rectangle {
-            radius: 9999
-            color: root.colSecondary
-        }
-    }
+    Canvas {
+        id: canvas
 
-    Shape {
+        property real degree: 0
+
         anchors.fill: parent
-        layer.enabled: true
-        layer.smooth: true
-        preferredRendererType: Shape.CurveRenderer
-        ShapePath {
-            id: secondaryPath
-            strokeColor: root.colSecondary
-            strokeWidth: root.lineWidth
-            capStyle: ShapePath.RoundCap
-            fillColor: "transparent"
-            PathAngleArc {
-                centerX: root.centerX
-                centerY: root.centerY
-                radiusX: root.arcRadius
-                radiusY: root.arcRadius
-                startAngle: root.startAngle - root.gapAngle
-                sweepAngle: -(360 - root.degree - 2 * root.gapAngle)
-            }
+        antialiasing: true
+
+        onDegreeChanged: {
+            requestPaint();
         }
-        ShapePath {
-            id: primaryPath
-            strokeColor: root.colPrimary
-            strokeWidth: root.lineWidth
-            capStyle: ShapePath.RoundCap
-            fillColor: "transparent"
-            PathAngleArc {
-                centerX: root.centerX
-                centerY: root.centerY
-                radiusX: root.arcRadius
-                radiusY: root.arcRadius
-                startAngle: root.startAngle
-                sweepAngle: root.degree
+
+        onPaint: {
+            var ctx = getContext("2d");
+            var x = root.width / 2;
+            var y = root.height / 2;
+            var radius = root.size / 2 - root.lineWidth;
+            var startAngle = (Math.PI / 180) * 270;
+            var fullAngle = (Math.PI / 180) * (270 + 360);
+            var progressAngle = (Math.PI / 180) * (270 + degree);
+            var epsilon = 0.01; // Small angle in radians
+            
+            ctx.reset();
+            if (root.fill) {
+                ctx.fillStyle = root.secondaryColor;
+                ctx.beginPath();
+                ctx.arc(x, y, radius + fillOverflow, startAngle, fullAngle);
+                ctx.fill();
             }
+            ctx.lineCap = 'round';
+            ctx.lineWidth = root.lineWidth;
+
+            // Secondary
+            ctx.beginPath();
+            ctx.arc(x, y, radius, progressAngle + gapAngle, fullAngle - gapAngle);
+            ctx.strokeStyle = root.secondaryColor;
+            ctx.stroke();
+
+            // Primary (value indication)
+            var endAngle = progressAngle + (value > 0 ? 0 : epsilon);
+            ctx.beginPath();
+            ctx.arc(x, y, radius, startAngle, endAngle);
+            ctx.strokeStyle = root.primaryColor;
+            ctx.stroke();
         }
+
+        Behavior on degree {
+            enabled: root.enableAnimation
+            NumberAnimation {
+                duration: root.animationDuration
+                easing.type: root.easingType
+            }
+
+        }
+
     }
 
 }

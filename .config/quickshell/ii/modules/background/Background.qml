@@ -47,8 +47,8 @@ Scope {
             property real effectiveWallpaperScale: 1 // Some reasonable init value, to be updated
             property int wallpaperWidth: modelData.width // Some reasonable init value, to be updated
             property int wallpaperHeight: modelData.height // Some reasonable init value, to be updated
-            property real movableXSpace: Math.max(0, (Math.min(wallpaperWidth * effectiveWallpaperScale, screen.width * preferredWallpaperScale) - screen.width) / 2)
-            property real movableYSpace: Math.max(0, (Math.min(wallpaperHeight * effectiveWallpaperScale, screen.height * preferredWallpaperScale) - screen.height) / 2)
+            property real movableXSpace: (Math.min(wallpaperWidth * effectiveWallpaperScale, screen.width * preferredWallpaperScale) - screen.width) / 2
+            property real movableYSpace: (Math.min(wallpaperHeight * effectiveWallpaperScale, screen.height * preferredWallpaperScale) - screen.height) / 2
             // Position
             property real clockX: (modelData.width / 2) + ((Math.random() < 0.5 ? -1 : 1) * modelData.width)
             property real clockY: (modelData.height / 2) + ((Math.random() < 0.5 ? -1 : 1) * modelData.height)
@@ -162,8 +162,8 @@ Scope {
                         - (0.15 * GlobalStates.sidebarLeftOpen * Config.options.background.parallax.enableSidebar)
                 }
                 property real effectiveValue: Math.max(0, Math.min(1, value))
-                x: bgRoot.movableXSpace > 0 ? (-(bgRoot.movableXSpace) - (effectiveValue - 0.5) * 2 * bgRoot.movableXSpace) : 0
-                y: bgRoot.movableYSpace > 0 ? -(bgRoot.movableYSpace) : 0
+                x: -(bgRoot.movableXSpace) - (effectiveValue - 0.5) * 2 * bgRoot.movableXSpace
+                y: -(bgRoot.movableYSpace)
                 source: bgRoot.wallpaperPath
                 fillMode: Image.PreserveAspectCrop
                 Behavior on x {

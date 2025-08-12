@@ -25,7 +25,7 @@ Scope {
     property real artRounding: Appearance.rounding.verysmall
     property list<real> visualizerPoints: []
 
-    property bool hasPlasmaIntegration: false
+    property bool hasPlasmaIntegration: true
     Process {
         id: plasmaIntegrationAvailabilityCheckProc
         running: true
@@ -35,9 +35,7 @@ Scope {
         }
     }
     function isRealPlayer(player) {
-        if (!Config.options.media.filterDuplicatePlayers) {
-            return true;
-        }
+        // return true
         return (
             // Remove unecessary native buses from browsers if there's plasma integration
             !(hasPlasmaIntegration && player.dbusName.startsWith('org.mpris.MediaPlayer2.firefox')) &&

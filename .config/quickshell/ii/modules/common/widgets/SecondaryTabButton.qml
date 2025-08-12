@@ -51,7 +51,6 @@ TabButton {
 
     RippleAnim {
         id: rippleFadeAnim
-        duration: rippleDuration * 2
         target: ripple
         property: "opacity"
         to: 0
@@ -107,28 +106,12 @@ TabButton {
             animation: Appearance.animation.elementMoveFast.colorAnimation.createObject(this)
         }
 
-        Item {
+        Rectangle {
             id: ripple
-            width: ripple.implicitWidth
-            height: ripple.implicitHeight
+
+            radius: Appearance.rounding.full
+            color: root.colRipple
             opacity: 0
-
-            property real implicitWidth: 0
-            property real implicitHeight: 0
-            visible: width > 0 && height > 0
-
-            Behavior on opacity {
-                animation: Appearance?.animation.elementMoveFast.colorAnimation.createObject(this)
-            }
-
-            RadialGradient {
-                anchors.fill: parent
-                gradient: Gradient {
-                    GradientStop { position: 0.0; color: root.colRipple }
-                    GradientStop { position: 0.3; color: root.colRipple }
-                    GradientStop { position: 0.5 ; color: Qt.rgba(root.colRipple.r, root.colRipple.g, root.colRipple.b, 0) }
-                }
-            }
 
             transform: Translate {
                 x: -ripple.width / 2

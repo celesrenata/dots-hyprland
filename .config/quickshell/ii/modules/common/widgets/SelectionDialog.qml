@@ -63,13 +63,16 @@ Item {
                 Layout.rightMargin: dialogPadding
             }
 
-            StyledListView {
+            ListView {
                 id: choiceListView
                 Layout.fillWidth: true
                 Layout.fillHeight: true
                 clip: true
                 currentIndex: root.defaultChoice !== undefined ? root.items.indexOf(root.defaultChoice) : -1
                 spacing: 6
+
+                maximumFlickVelocity: 3500
+                boundsBehavior: Flickable.DragOverBounds
 
                 model: ScriptModel {
                     id: choiceModel

@@ -99,23 +99,6 @@ ContentPage {
             ConfigRow {
                 uniform: true
                 ConfigSwitch {
-                    text: Translation.tr("Automatically hide")
-                    checked: Config.options.bar.autoHide.enable
-                    onCheckedChanged: {
-                        Config.options.bar.autoHide.enable = checked;
-                    }
-                }
-                ConfigSwitch {
-                    text: Translation.tr("Place at the bottom")
-                    checked: Config.options.bar.bottom
-                    onCheckedChanged: {
-                        Config.options.bar.bottom = checked;
-                    }
-                }
-            }
-            ConfigRow {
-                uniform: true
-                ConfigSwitch {
                     text: Translation.tr('Borderless')
                     checked: Config.options.bar.borderless
                     onCheckedChanged: {
@@ -361,7 +344,7 @@ ContentPage {
                 Config.options.sidebar.keepRightSidebarLoaded = checked;
             }
             StyledToolTip {
-                content: Translation.tr("When enabled keeps the content of the right sidebar loaded to reduce the delay when opening,\nat the cost of around 15MB of consistent RAM usage. Delay significance depends on your system's performance.\nUsing a custom kernel like linux-cachyos might help")
+                content: Translation.tr("When enabled keeps the content of the right sidebar loaded to reduce the delay when opening,\nat the cost of around 15MB of consistent RAM usage. Delay significance depends on your system's performance.\nUsing a different kernel might help with this delay")
             }
         }
     }
