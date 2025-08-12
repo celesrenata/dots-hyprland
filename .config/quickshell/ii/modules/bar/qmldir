@@ -1,0 +1,17 @@
+module qs.modules.bar
+
+ActiveWindow 1.0 ActiveWindow.qml
+BarContent 1.0 BarContent.qml
+BarGroup 1.0 BarGroup.qml
+Bar 1.0 Bar.qml
+BatteryIndicator 1.0 BatteryIndicator.qml
+CircleUtilButton 1.0 CircleUtilButton.qml
+ClockWidget 1.0 ClockWidget.qml
+Media 1.0 Media.qml
+Resource 1.0 Resource.qml
+Resources 1.0 Resources.qml
+ScrollHint 1.0 ScrollHint.qml
+SysTrayItem 1.0 SysTrayItem.qml
+SysTray 1.0 SysTray.qml
+UtilButtons 1.0 UtilButtons.qml
+Workspaces 1.0 Workspaces.qml

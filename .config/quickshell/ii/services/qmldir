@@ -1,4 +1,4 @@
-module qs.qs.services
+module qs.services
 
 singleton Ai 1.0 Ai.qml
 singleton AppSearch 1.0 AppSearch.qml
@@ -10,6 +10,7 @@ BooruResponseData 1.0 BooruResponseData.qml
 singleton Brightness 1.0 Brightness.qml
 singleton Cliphist 1.0 Cliphist.qml
 singleton DateTime 1.0 DateTime.qml
+singleton EasyEffects 1.0 EasyEffects.qml
 singleton Emojis 1.0 Emojis.qml
 singleton FirstRunExperience 1.0 FirstRunExperience.qml
 singleton HyprlandData 1.0 HyprlandData.qml
@@ -24,6 +25,7 @@ singleton Network 1.0 Network.qml
 singleton Notifications 1.0 Notifications.qml
 singleton ResourceUsage 1.0 ResourceUsage.qml
 singleton SystemInfo 1.0 SystemInfo.qml
+singleton TimerService 1.0 TimerService.qml
 singleton Todo 1.0 Todo.qml
 singleton Weather 1.0 Weather.qml
 singleton Ydotool 1.0 Ydotool.qml
