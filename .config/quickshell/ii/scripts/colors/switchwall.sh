@@ -284,8 +284,18 @@ switch() {
     source "$(eval echo $ILLOGICAL_IMPULSE_VIRTUAL_ENV)/bin/activate"
     python3 "$SCRIPT_DIR/generate_colors_material.py" "${generate_colors_material_args[@]}" \
         > "$STATE_DIR"/user/generated/material_colors.scss
+    
+    # Convert SCSS to JSON for quickshell MaterialThemeLoader
+    awk -F': ' '/^\$/ {gsub(/\$|;/, "", $0); print "\"" $1 "\": \"" $2 "\","}' \
+        "$STATE_DIR"/user/generated/material_colors.scss | \
+        sed '$ s/,$//' | \
+        (echo "{"; cat; echo "}") > "$STATE_DIR"/user/generated/colors.json
+    
     "$SCRIPT_DIR"/applycolor.sh
     deactivate
+    
+    # Reload quickshell to apply new colors
+    systemctl --user reload quickshell.service 2>/dev/null || true
 
     # Pass screen width, height, and wallpaper path to post_process
     max_width_desired="$(hyprctl monitors -j | jq '([.[].width] | min)' | xargs)"

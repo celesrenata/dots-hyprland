@@ -9,7 +9,7 @@ CACHE_DIR="$XDG_CACHE_HOME/quickshell"
 STATE_DIR="$XDG_STATE_HOME/quickshell"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-term_alpha=35
+term_alpha=60
 
 # Check transparency setting and adjust term_alpha accordingly
 if [ -f "$STATE_DIR/user/generated/terminal/transparency" ]; then
@@ -41,6 +41,7 @@ colorstrings=$(cat $STATE_DIR/user/generated/material_colors.scss | cut -d: -f2 
 IFS=$'\n'
 colorlist=($colornames)     # Array of color names
 colorvalues=($colorstrings) # Array of color values
+export colorlist colorvalues
 
 apply_term() {
   # Check if terminal escape sequence template exists
