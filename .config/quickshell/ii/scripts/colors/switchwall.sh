@@ -1,5 +1,10 @@
 #!/usr/bin/env bash
 
+# Log execution
+LOG="/tmp/switchwall.log"
+echo "[$(date)] switchwall.sh started" >> "$LOG"
+echo "ILLOGICAL_IMPULSE_VIRTUAL_ENV=$ILLOGICAL_IMPULSE_VIRTUAL_ENV" >> "$LOG"
+
 QUICKSHELL_CONFIG_NAME="ii"
 XDG_CONFIG_HOME="${XDG_CONFIG_HOME:-$HOME/.config}"
 XDG_CACHE_HOME="${XDG_CACHE_HOME:-$HOME/.cache}"
@@ -84,9 +89,10 @@ check_and_prompt_upscale() {
             img_height=$(identify -format "%h" "$img" 2>/dev/null)
         fi
         if [[ "$img_width" -lt "$min_width_desired" || "$img_height" -lt "$min_height_desired" ]]; then
-            action=$(notify-send "Upscale?" \
+            action=$(timeout 5 notify-send "Upscale?" \
                 "Image resolution (${img_width}x${img_height}) is lower than screen resolution (${min_width_desired}x${min_height_desired})" \
                 -A "open_upscayl=Open Upscayl"\
+                -t 5000 \
                 -a "Wallpaper switcher")
             if [[ "$action" == "open_upscayl" ]]; then
                 if command -v upscayl &>/dev/null; then
@@ -281,21 +287,23 @@ switch() {
     fi
 
     matugen "${matugen_args[@]}"
-    source "$(eval echo $ILLOGICAL_IMPULSE_VIRTUAL_ENV)/bin/activate"
-    python3 "$SCRIPT_DIR/generate_colors_material.py" "${generate_colors_material_args[@]}" \
-        > "$STATE_DIR"/user/generated/material_colors.scss
+    echo "[$(date)] Running python script" >> "$LOG"
+    "$(eval echo $ILLOGICAL_IMPULSE_VIRTUAL_ENV)/bin/python3" "$SCRIPT_DIR/generate_colors_material.py" "${generate_colors_material_args[@]}" \
+        > "$STATE_DIR"/user/generated/material_colors.scss 2>> "$LOG"
+    echo "[$(date)] Python done, scss size: $(wc -l < "$STATE_DIR"/user/generated/material_colors.scss)" >> "$LOG"
     
     # Convert SCSS to JSON for quickshell MaterialThemeLoader
     awk -F': ' '/^\$/ {gsub(/\$|;/, "", $0); print "\"" $1 "\": \"" $2 "\","}' \
         "$STATE_DIR"/user/generated/material_colors.scss | \
         sed '$ s/,$//' | \
-        (echo "{"; cat; echo "}") > "$STATE_DIR"/user/generated/colors.json
+        (echo "{"; cat; echo "}") > "$STATE_DIR"/user/generated/colors.json.tmp
+    mv "$STATE_DIR"/user/generated/colors.json.tmp "$STATE_DIR"/user/generated/colors.json
+    touch "$STATE_DIR"/user/generated/colors.json
     
-    "$SCRIPT_DIR"/applycolor.sh
-    deactivate
+    "$XDG_CONFIG_HOME/quickshell/scripts/colors/applycolor.sh"
     
-    # Reload quickshell to apply new colors
-    systemctl --user reload quickshell.service 2>/dev/null || true
+    # Trigger quickshell to reload theme via IPC (doesn't restart the process)
+    quickshell ipc -c ii call materialTheme reload 2>/dev/null || true
 
     # Pass screen width, height, and wallpaper path to post_process
     max_width_desired="$(hyprctl monitors -j | jq '([.[].width] | min)' | xargs)"
@@ -379,8 +387,17 @@ main() {
 
     # Only prompt for wallpaper if not using --color and not using --noswitch and no imgpath set
     if [[ -z "$imgpath" && -z "$color_flag" && -z "$noswitch_flag" ]]; then
-        cd "$(xdg-user-dir PICTURES)/Wallpapers/showcase" 2>/dev/null || cd "$(xdg-user-dir PICTURES)/Wallpapers" 2>/dev/null || cd "$(xdg-user-dir PICTURES)" || return 1
-        imgpath="$(kdialog --getopenfilename . --title 'Choose wallpaper')"
+        # Try to pick a random wallpaper from Wallpapers directory
+        WALLPAPER_DIR="$(xdg-user-dir PICTURES)/Wallpapers"
+        if [[ -d "$WALLPAPER_DIR" ]]; then
+            imgpath=$(find "$WALLPAPER_DIR" -type f \( -name "*.jpg" -o -name "*.png" \) 2>/dev/null | shuf -n 1)
+        fi
+        
+        # If still no wallpaper, prompt with kdialog
+        if [[ -z "$imgpath" ]]; then
+            cd "$(xdg-user-dir PICTURES)/Wallpapers/showcase" 2>/dev/null || cd "$(xdg-user-dir PICTURES)/Wallpapers" 2>/dev/null || cd "$(xdg-user-dir PICTURES)" || return 1
+            imgpath="$(kdialog --getopenfilename . --title 'Choose wallpaper')"
+        fi
     fi
 
     # If type_flag is 'auto', detect scheme type from image (after imgpath is set)
