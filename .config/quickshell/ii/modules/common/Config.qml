@@ -103,7 +103,7 @@ Singleton {
             }
 
             property JsonObject apps: JsonObject {
-                property string bluetooth: "kcmshell6-bluetooth"
+                property string bluetooth: "/tmp/test-wrapper.sh"
                 property string network: "kcmshell6-network"
                 property string networkEthernet: "kcmshell6-network"
                 property string taskManager: "plasma-systemmonitor --page-name Processes"
