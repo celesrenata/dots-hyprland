@@ -47,8 +47,8 @@ Scope {
             property real effectiveWallpaperScale: 1
             property int wallpaperWidth: modelData.width
             property int wallpaperHeight: modelData.height
-            property real movableXSpace: (Math.min(wallpaperWidth * effectiveWallpaperScale, screen.width * preferredWallpaperScale) - screen.width) / 2
-            property real movableYSpace: (Math.min(wallpaperHeight * effectiveWallpaperScale, screen.height * preferredWallpaperScale) - screen.height) / 2
+            property real movableXSpace: (wallpaperWidth * effectiveWallpaperScale - screen.width) / 2
+            property real movableYSpace: (wallpaperHeight * effectiveWallpaperScale - screen.height) / 2
             // Position
             property real clockX: (modelData.width / 2) + ((Math.random() < 0.5 ? -1 : 1) * modelData.width)
             property real clockY: (modelData.height / 2) + ((Math.random() < 0.5 ? -1 : 1) * modelData.height)
@@ -104,7 +104,7 @@ Scope {
                         console.log("Image:", width, "x", height, "Screen:", bgRoot.screen.width, "x", bgRoot.screen.height, "minScaleToFill:", minScaleToFill)
                         
                         // Add extra scale for parallax movement (10% extra on each side = 20% total)
-                        const parallaxScale = 1.2;
+                        const parallaxScale = 1.05;
                         
                         bgRoot.effectiveWallpaperScale = Math.max(
                             minScaleToFill * parallaxScale,
@@ -159,11 +159,15 @@ Scope {
                 }
             }
 
-            // Wallpaper
-            Image {
-                id: wallpaper
-                visible: !bgRoot.wallpaperIsVideo
-                property real value // 0 to 1, for offset
+            // Wallpaper container
+            Item {
+                anchors.fill: parent
+                clip: true
+                
+                Image {
+                    id: wallpaper
+                    visible: !bgRoot.wallpaperIsVideo
+                    property real value // 0 to 1, for offset
                 value: {
                     // Range = groups that workspaces span on
                     const chunkSize = Config?.options.bar.workspaces.shown ?? 10;
@@ -176,10 +180,32 @@ Scope {
                 }
                 property real effectiveValue: Math.max(0, Math.min(1, value))
                 property bool dimensionsLoaded: false
-                x: dimensionsLoaded ? (-(bgRoot.movableXSpace) - (effectiveValue - 0.5) * 2 * bgRoot.movableXSpace) : 0
-                y: dimensionsLoaded ? -(bgRoot.movableYSpace) : 0
+                x: dimensionsLoaded ? -bgRoot.movableXSpace - (effectiveValue * 2 - 1) * bgRoot.movableXSpace : 0
+                y: dimensionsLoaded ? -bgRoot.movableYSpace : 0
                 source: bgRoot.wallpaperPath
-                fillMode: Image.PreserveAspectCrop
+                fillMode: Image.Stretch
+                
+                Binding {
+                    target: wallpaper
+                    property: "width"
+                    value: bgRoot.wallpaperWidth * bgRoot.effectiveWallpaperScale
+                    when: true
+                }
+                Binding {
+                    target: wallpaper
+                    property: "height"
+                    value: bgRoot.wallpaperHeight * bgRoot.effectiveWallpaperScale
+                    when: true
+                }
+                
+                onWidthChanged: console.log("Image width:", width, "wallpaperWidth:", bgRoot.wallpaperWidth, "scale:", bgRoot.effectiveWallpaperScale, "calculated:", bgRoot.wallpaperWidth * bgRoot.effectiveWallpaperScale)
+                onHeightChanged: console.log("Image height:", height, "wallpaperHeight:", bgRoot.wallpaperHeight)
+                onXChanged: console.log("Image x:", x, "movableXSpace:", bgRoot.movableXSpace, "effectiveValue:", effectiveValue)
+                onStatusChanged: {
+                    if (status === Image.Ready) {
+                        console.log("Image loaded - sourceSize:", sourceSize.width, "x", sourceSize.height, "paintedSize:", paintedWidth, "x", paintedHeight, "widget:", width, "x", height)
+                    }
+                }
                 
                 Connections {
                     target: bgRoot
@@ -202,11 +228,8 @@ Scope {
                         easing.type: Easing.OutCubic
                     }
                 }
-                sourceSize {
-                    width: bgRoot.wallpaperWidth * bgRoot.effectiveWallpaperScale
-                    height: bgRoot.wallpaperHeight * bgRoot.effectiveWallpaperScale
-                }
             }
+            } // End wallpaper container
 
             // The clock
             Item {
