@@ -330,6 +330,15 @@ main() {
 
     while [[ $# -gt 0 ]]; do
         case "$1" in
+            --choose)
+                # Interactive wallpaper selection using file picker
+                imgpath=$(yad --file --title="Select Wallpaper" --file-filter="Images | *.jpg *.jpeg *.png *.webp" --filename="$HOME/Backgrounds/" 2>/dev/null)
+                if [[ -z "$imgpath" ]]; then
+                    echo "No wallpaper selected"
+                    exit 0
+                fi
+                shift
+                ;;
             --mode)
                 mode_flag="$2"
                 shift 2
