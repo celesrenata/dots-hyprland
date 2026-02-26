@@ -162,41 +162,17 @@ ContentPage {
                         text: Translation.tr("Transparency")
                         checked: Config.options.terminal?.transparency ?? true
                         
-                        // Add debugging for all possible events
-                        Component.onCompleted: {
-                            console.log("Transparency toggle created, initial checked:", checked);
-                            Quickshell.execDetached(["bash", "-c", "echo 'Toggle created with checked=" + checked + "' >> /tmp/transparency_debug.log"]);
-                        }
-                        
                         onCheckedChanged: {
-                            // DEBUG: Check what Config.options actually contains
-                            console.log("Config.options:", JSON.stringify(Config.options));
-                            console.log("Config.options.terminal:", JSON.stringify(Config.options.terminal));
-                            
-                            // Skip config assignment for now and just make the toggle work
-                            let transparencyValue = checked ? "transparent" : "opaque";
-                            Quickshell.execDetached(["bash", "-c", `
+                            let transparencyValue = checked ? "60" : "100";
+                            let cmd = `
+                                echo "$(date): Transparency toggled to ${transparencyValue}" >> /tmp/terminal_settings.log &&
                                 mkdir -p ~/.local/state/quickshell/user/generated/terminal && 
-                                echo "${transparencyValue}" > ~/.local/state/quickshell/user/generated/terminal/transparency && 
-                                ~/.config/quickshell/scripts/colors/applycolor.sh
-                            `]);
+                                echo "${transparencyValue}" > ~/.local/state/quickshell/user/generated/terminal/opacity && 
+                                ~/.config/quickshell/ii/scripts/colors/applycolor.sh --term
+                            `;
+                            Quickshell.execDetached(["bash", "-c", cmd]);
                             
-                            console.log("Terminal transparency toggled:", checked, "->", transparencyValue);
-                        }
-                        
-                        onClicked: {
-                            console.log("onClicked triggered!");
-                            Quickshell.execDetached(["bash", "-c", "echo 'onClicked event' >> /tmp/transparency_debug.log"]);
-                        }
-                        
-                        onPressed: {
-                            console.log("onPressed triggered!");
-                            Quickshell.execDetached(["bash", "-c", "echo 'onPressed event' >> /tmp/transparency_debug.log"]);
-                        }
-                        
-                        onReleased: {
-                            console.log("onReleased triggered!");
-                            Quickshell.execDetached(["bash", "-c", "echo 'onReleased event' >> /tmp/transparency_debug.log"]);
+                            console.log("Terminal transparency toggled:", checked, "opacity:", transparencyValue);
                         }
                         
                         StyledToolTip {
@@ -217,12 +193,10 @@ ContentPage {
                         if (!Config.options.terminal) Config.options.terminal = {};
                         Config.options.terminal.opacity = value;
                         
-                        // Update term_alpha in applycolor.sh and also save to opacity file for transparency system
                         Quickshell.execDetached(["bash", "-c", `
-                            sed -i 's/^term_alpha=.*/term_alpha=${value}/' ~/.config/quickshell/scripts/colors/applycolor.sh && 
                             mkdir -p ~/.local/state/quickshell/user/generated/terminal && 
                             echo "${value}" > ~/.local/state/quickshell/user/generated/terminal/opacity && 
-                            ~/.config/quickshell/scripts/colors/applycolor.sh
+                            ~/.config/quickshell/ii/scripts/colors/applycolor.sh --term
                         `]);
                     }
                 }

@@ -1,5 +1,11 @@
 #!/usr/bin/env bash
 
+# Parse arguments
+TERM_ONLY=false
+if [[ "$1" == "--term" ]]; then
+  TERM_ONLY=true
+fi
+
 QUICKSHELL_CONFIG_NAME="ii"
 XDG_CONFIG_HOME="${XDG_CONFIG_HOME:-$HOME/.config}"
 XDG_CACHE_HOME="${XDG_CACHE_HOME:-$HOME/.cache}"
@@ -9,7 +15,13 @@ CACHE_DIR="$XDG_CACHE_HOME/quickshell"
 STATE_DIR="$XDG_STATE_HOME/quickshell"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-term_alpha=10
+# Read terminal alpha from file or default
+if [ -f "$STATE_DIR/user/generated/terminal/opacity" ]; then
+  term_alpha=$(cat "$STATE_DIR/user/generated/terminal/opacity")
+else
+  term_alpha=60
+fi
+
 # sleep 0 # idk i wanted some delay or colors dont get applied properly
 if [ ! -d "$STATE_DIR"/user/generated ]; then
   mkdir -p "$STATE_DIR"/user/generated
@@ -43,19 +55,57 @@ apply_term() {
 
   sed -i "s/\$alpha/$term_alpha/g" "$STATE_DIR/user/generated/terminal/sequences.txt"
 
+  echo "$(date): Sending sequences to terminals, alpha=$term_alpha" >> /tmp/terminal_settings.log
   for file in /dev/pts/*; do
     if [[ $file =~ ^/dev/pts/[0-9]+$ ]]; then
       {
       cat "$STATE_DIR"/user/generated/terminal/sequences.txt >"$file"
+      echo "$(date): Sent to $file" >> /tmp/terminal_settings.log
       } & disown || true
     fi
   done
+}
+
+apply_foot() {
+  if [ ! -f "$SCRIPT_DIR/foot/foot.ini" ]; then
+    echo "Template file not found for Foot. Skipping that."
+    return
+  fi
+  mkdir -p "$STATE_DIR"/user/generated/foot
+  cp "$SCRIPT_DIR/foot/foot.ini" "$STATE_DIR"/user/generated/foot/foot.ini
+  for i in "${!colorlist[@]}"; do
+    sed -i "s/{{ ${colorlist[$i]} }}/${colorvalues[$i]#\#}/g" "$STATE_DIR"/user/generated/foot/foot.ini
+  done
+  # Substitute alpha value (convert percentage to decimal)
+  local alpha_decimal=$(awk "BEGIN {printf \"%.2f\", $term_alpha/100}")
+  sed -i "s/{{ \$alpha }}/$alpha_decimal/g" "$STATE_DIR"/user/generated/foot/foot.ini
+  cp "$STATE_DIR"/user/generated/foot/foot.ini "$XDG_CONFIG_HOME/foot/foot.ini"
+}
+
+apply_wofi() {
+  if [ ! -f "$SCRIPT_DIR/wofi/style.css" ]; then
+    echo "Template file not found for Wofi. Skipping that."
+    return
+  fi
+  mkdir -p "$STATE_DIR"/user/generated/wofi
+  cp "$SCRIPT_DIR/wofi/style.css" "$STATE_DIR"/user/generated/wofi/style.css
+  for i in "${!colorlist[@]}"; do
+    sed -i "s/{{ ${colorlist[$i]} }}/${colorvalues[$i]#\#}/g" "$STATE_DIR"/user/generated/wofi/style.css
+  done
+  cp "$STATE_DIR"/user/generated/wofi/style.css "$XDG_CONFIG_HOME/wofi/style.css"
 }
 
 apply_qt() {
   sh "$CONFIG_DIR/scripts/kvantum/materialQT.sh"          # generate kvantum theme
   python "$CONFIG_DIR/scripts/kvantum/changeAdwColors.py" # apply config colors
 }
+
+# If --term flag is set, only update terminal
+if [ "$TERM_ONLY" = true ]; then
+  apply_term
+  apply_foot
+  exit 0
+fi
 
 # Check if terminal theming is enabled in config
 CONFIG_FILE="$XDG_CONFIG_HOME/illogical-impulse/config.json"
