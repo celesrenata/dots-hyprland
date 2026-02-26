@@ -19,11 +19,30 @@ Singleton {
     property string userKeybindConfigPath: FileUtils.trimFileProtocol(`${Directories.config}/hypr/custom/keybinds.conf`)
     property var defaultKeybinds: {"children": []}
     property var userKeybinds: {"children": []}
+    
+    function expandModifiers(mods) {
+        return mods.map(mod => 
+            mod.replace(/\$Primary/g, "Super")
+               .replace(/\$Secondary/g, "Control")
+               .replace(/\$Tertiary/g, "Shift")
+               .replace(/\$Alternate/g, "Alt")
+        )
+    }
+    
+    function expandKeybinds(kbs) {
+        return kbs.map(kb => {
+            var expanded = {}
+            for (var key in kb) {
+                expanded[key] = kb[key]
+            }
+            expanded.mods = expandModifiers(kb.mods)
+            return expanded
+        })
+    }
+    
     property var keybinds: ({
-        children: [
-            ...(defaultKeybinds.children ?? []),
-            ...(userKeybinds.children ?? []),
-        ]
+        children: [],
+        keybinds: expandKeybinds((defaultKeybinds.keybinds ?? []).concat(userKeybinds.keybinds ?? []))
     })
 
     Connections {
@@ -40,7 +59,7 @@ Singleton {
     Process {
         id: getDefaultKeybinds
         running: true
-        command: [root.keybindParserPath, "--path", root.defaultKeybindConfigPath]
+        command: ["bash", "-c", root.keybindParserPath + " --path \"$(readlink -f " + root.defaultKeybindConfigPath + ")\""]
         
         stdout: SplitParser {
             onRead: data => {
