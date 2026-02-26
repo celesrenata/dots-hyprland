@@ -8,7 +8,8 @@ ILLOGICAL_IMPULSE_VIRTUAL_ENV="${ILLOGICAL_IMPULSE_VIRTUAL_ENV:-$HOME/.local/sta
 echo "ILLOGICAL_IMPULSE_VIRTUAL_ENV=$ILLOGICAL_IMPULSE_VIRTUAL_ENV" >> "$LOG"
 
 # Ensure LD_LIBRARY_PATH includes system libraries for Python venv
-export LD_LIBRARY_PATH="/run/current-system/sw/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+GCC_LIB=$(find /nix/store -maxdepth 1 -name "*gcc-*-lib" -type d 2>/dev/null | head -1)
+export LD_LIBRARY_PATH="/run/current-system/sw/lib${GCC_LIB:+:$GCC_LIB/lib}${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
 echo "LD_LIBRARY_PATH=$LD_LIBRARY_PATH" >> "$LOG"
 
 QUICKSHELL_CONFIG_NAME="ii"
