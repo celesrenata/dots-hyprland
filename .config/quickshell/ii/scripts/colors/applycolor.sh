@@ -33,6 +33,12 @@ colorstrings=''
 colorlist=()
 colorvalues=()
 
+# If material_colors.scss is empty, generate colors first
+if [ ! -s "$STATE_DIR/user/generated/material_colors.scss" ]; then
+  echo "material_colors.scss is empty, generating colors..."
+  "$SCRIPT_DIR/switchwall.sh" --noswitch
+fi
+
 colornames=$(cat $STATE_DIR/user/generated/material_colors.scss | cut -d: -f1)
 colorstrings=$(cat $STATE_DIR/user/generated/material_colors.scss | cut -d: -f2 | cut -d ' ' -f2 | cut -d ";" -f1)
 IFS=$'\n'
