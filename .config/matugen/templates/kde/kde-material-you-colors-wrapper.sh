@@ -43,4 +43,7 @@ case "$scheme_variant_str" in
         ;;
 esac
 
-kde-material-you-colors "$mode_flag" --color "$color" -sv "$sv_num"
+# Run kde-material-you-colors
+# Note: Errors from plasma-apply-colorscheme are expected on non-Plasma systems
+# The Qt color schemes are still generated and applied correctly
+kde-material-you-colors "$mode_flag" --color "$color" -sv "$sv_num" 2>&1 || true
