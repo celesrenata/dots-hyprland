@@ -300,7 +300,7 @@ switch() {
     mv "$STATE_DIR"/user/generated/colors.json.tmp "$STATE_DIR"/user/generated/colors.json
     touch "$STATE_DIR"/user/generated/colors.json
     
-    "$XDG_CONFIG_HOME/quickshell/scripts/colors/applycolor.sh"
+    "$SCRIPT_DIR/applycolor.sh"
     
     # Trigger quickshell to reload theme via IPC (doesn't restart the process)
     quickshell ipc -c ii call materialTheme reload 2>/dev/null || true
