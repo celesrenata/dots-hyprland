@@ -3,7 +3,13 @@
 # Log execution
 LOG="/tmp/switchwall.log"
 echo "[$(date)] switchwall.sh started" >> "$LOG"
+
+ILLOGICAL_IMPULSE_VIRTUAL_ENV="${ILLOGICAL_IMPULSE_VIRTUAL_ENV:-$HOME/.local/state/quickshell/.venv}"
 echo "ILLOGICAL_IMPULSE_VIRTUAL_ENV=$ILLOGICAL_IMPULSE_VIRTUAL_ENV" >> "$LOG"
+
+# Ensure LD_LIBRARY_PATH includes system libraries for Python venv
+export LD_LIBRARY_PATH="/run/current-system/sw/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+echo "LD_LIBRARY_PATH=$LD_LIBRARY_PATH" >> "$LOG"
 
 QUICKSHELL_CONFIG_NAME="ii"
 XDG_CONFIG_HOME="${XDG_CONFIG_HOME:-$HOME/.config}"
