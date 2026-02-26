@@ -14,6 +14,7 @@ import Quickshell.Hyprland
 
 Scope {
     id: root
+    readonly property bool showClock: Config.options.background.showClock
     readonly property bool fixedClockPosition: Config.options.background.fixedClockPosition
     readonly property real fixedClockX: Config.options.background.clockX
     readonly property real fixedClockY: Config.options.background.clockY
@@ -234,6 +235,7 @@ Scope {
             // The clock
             Item {
                 id: clock
+                visible: root.showClock
                 anchors {
                     left: wallpaper.left
                     top: wallpaper.top

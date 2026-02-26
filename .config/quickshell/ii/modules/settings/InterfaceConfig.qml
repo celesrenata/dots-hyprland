@@ -351,6 +351,13 @@ ContentPage {
 
     ContentSection {
         title: Translation.tr("On-screen display")
+        ConfigSwitch {
+            text: Translation.tr("Show background clock")
+            checked: Config.options.background.showClock
+            onCheckedChanged: {
+                Config.options.background.showClock = checked;
+            }
+        }
         ConfigSpinBox {
             text: Translation.tr("Timeout (ms)")
             value: Config.options.osd.timeout

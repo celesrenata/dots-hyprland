@@ -111,6 +111,7 @@ Singleton {
             }
 
             property JsonObject background: JsonObject {
+                property bool showClock: false
                 property bool fixedClockPosition: false
                 property real clockX: -500
                 property real clockY: -500
