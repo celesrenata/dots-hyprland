@@ -33,9 +33,9 @@ colorstrings=''
 colorlist=()
 colorvalues=()
 
-# If material_colors.scss is empty, generate colors first
-if [ ! -s "$STATE_DIR/user/generated/material_colors.scss" ]; then
-  echo "material_colors.scss is empty, generating colors..."
+# If material_colors.scss is empty or doesn't exist, generate colors first
+if [ ! -f "$STATE_DIR/user/generated/material_colors.scss" ] || [ ! -s "$STATE_DIR/user/generated/material_colors.scss" ]; then
+  echo "material_colors.scss is missing or empty, generating colors..."
   "$SCRIPT_DIR/switchwall.sh" --noswitch
 fi
 
