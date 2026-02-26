@@ -45,7 +45,17 @@ Scope {
                 || Config.options.background.wallpaperPath.endsWith(".mov")
             property string wallpaperPath: wallpaperIsVideo ? Config.options.background.thumbnailPath : Config.options.background.wallpaperPath
             property real preferredWallpaperScale: Config.options.background.parallax.workspaceZoom
-            property real effectiveWallpaperScale: 1
+            property real effectiveWallpaperScale: {
+                if (wallpaper.status === Image.Ready) {
+                    const minScaleToFill = Math.max(
+                        bgRoot.screen.width / wallpaper.sourceSize.width,
+                        bgRoot.screen.height / wallpaper.sourceSize.height
+                    );
+                    const parallaxScale = 1.05;
+                    return Math.max(minScaleToFill * parallaxScale, preferredWallpaperScale);
+                }
+                return 1;
+            }
             property int wallpaperWidth: modelData.width
             property int wallpaperHeight: modelData.height
             property real movableXSpace: (wallpaperWidth * effectiveWallpaperScale - screen.width) / 2
@@ -103,14 +113,6 @@ Scope {
                         );
                         
                         console.log("Image:", width, "x", height, "Screen:", bgRoot.screen.width, "x", bgRoot.screen.height, "minScaleToFill:", minScaleToFill)
-                        
-                        // Add extra scale for parallax movement (10% extra on each side = 20% total)
-                        const parallaxScale = 1.05;
-                        
-                        bgRoot.effectiveWallpaperScale = Math.max(
-                            minScaleToFill * parallaxScale,
-                            bgRoot.preferredWallpaperScale
-                        );
                         
                         console.log("effectiveWallpaperScale:", bgRoot.effectiveWallpaperScale, "Image will be:", width * bgRoot.effectiveWallpaperScale, "x", height * bgRoot.effectiveWallpaperScale)
 

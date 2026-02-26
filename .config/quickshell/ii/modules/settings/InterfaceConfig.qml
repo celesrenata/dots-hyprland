@@ -371,6 +371,44 @@ ContentPage {
     }
 
     ContentSection {
+        title: Translation.tr("Background & Wallpaper")
+        
+        ContentSubsectionLabel {
+            text: Translation.tr("Parallax Effects")
+        }
+        
+        ConfigSwitch {
+            text: Translation.tr("Enable workspace parallax")
+            checked: Config.options.background.parallax.enableWorkspace
+            onCheckedChanged: {
+                Config.options.background.parallax.enableWorkspace = checked;
+                Config.save();
+            }
+        }
+        
+        ConfigSwitch {
+            text: Translation.tr("Enable sidebar parallax")
+            checked: Config.options.background.parallax.enableSidebar
+            onCheckedChanged: {
+                Config.options.background.parallax.enableSidebar = checked;
+                Config.save();
+            }
+        }
+        
+        ConfigSpinBox {
+            text: Translation.tr("Workspace zoom (%)")
+            value: Config.options.background.parallax.workspaceZoom * 100
+            from: 80
+            to: 120
+            stepSize: 1
+            onValueChanged: {
+                Config.options.background.parallax.workspaceZoom = value / 100;
+                Config.save();
+            }
+        }
+    }
+
+    ContentSection {
         title: Translation.tr("Overview")
         ConfigSwitch {
             text: Translation.tr("Enable")
