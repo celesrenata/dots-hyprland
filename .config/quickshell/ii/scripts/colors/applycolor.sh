@@ -69,4 +69,7 @@ else
   apply_term &
 fi
 
+apply_foot &
+apply_wofi &
+
 # apply_qt & # Qt theming is already handled by kde-material-colors
