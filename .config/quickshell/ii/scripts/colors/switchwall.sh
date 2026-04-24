@@ -293,7 +293,7 @@ switch() {
         fi
     fi
 
-    matugen "${matugen_args[@]}"
+    matugen "${matugen_args[@]}" --source-color-index 0
     echo "[$(date)] Running python script" >> "$LOG"
     "$(eval echo $ILLOGICAL_IMPULSE_VIRTUAL_ENV)/bin/python3" "$SCRIPT_DIR/generate_colors_material.py" "${generate_colors_material_args[@]}" \
         > "$STATE_DIR"/user/generated/material_colors.scss 2>> "$LOG"
