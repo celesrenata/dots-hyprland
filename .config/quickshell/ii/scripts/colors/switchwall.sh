@@ -441,6 +441,11 @@ main() {
     fi
 
     switch "$imgpath" "$mode_flag" "$type_flag" "$color_flag" "$color"
+
+    # Sync RGB lighting to new wallpaper colors
+    if [ -x "$HOME/.local/bin/sync-rgb.sh" ]; then
+        "$HOME/.local/bin/sync-rgb.sh" &
+    fi
 }
 
 main "$@"
