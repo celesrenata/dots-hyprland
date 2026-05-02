@@ -295,6 +295,7 @@ switch() {
 
     matugen "${matugen_args[@]}" --source-color-index 0
     echo "[$(date)] Running python script" >> "$LOG"
+    [ -f "$XDG_CONFIG_HOME/quickshell/env.sh" ] && source "$XDG_CONFIG_HOME/quickshell/env.sh"
     "$(eval echo $ILLOGICAL_IMPULSE_VIRTUAL_ENV)/bin/python3" "$SCRIPT_DIR/generate_colors_material.py" "${generate_colors_material_args[@]}" \
         > "$STATE_DIR"/user/generated/material_colors.scss 2>> "$LOG"
     echo "[$(date)] Python done, scss size: $(wc -l < "$STATE_DIR"/user/generated/material_colors.scss)" >> "$LOG"
