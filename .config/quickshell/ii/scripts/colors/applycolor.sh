@@ -22,7 +22,6 @@ else
   term_alpha=60
 fi
 
-# sleep 0 # idk i wanted some delay or colors dont get applied properly
 if [ ! -d "$STATE_DIR"/user/generated ]; then
   mkdir -p "$STATE_DIR"/user/generated
 fi
@@ -101,10 +100,6 @@ apply_wofi() {
   cp "$STATE_DIR"/user/generated/wofi/style.css "$XDG_CONFIG_HOME/wofi/style.css"
 }
 
-apply_qt() {
-  sh "$CONFIG_DIR/scripts/kvantum/materialQT.sh"          # generate kvantum theme
-  python "$CONFIG_DIR/scripts/kvantum/changeAdwColors.py" # apply config colors
-}
 
 # If --term flag is set, only update terminal
 if [ "$TERM_ONLY" = true ]; then
@@ -128,4 +123,3 @@ fi
 apply_foot &
 apply_wofi &
 
-# apply_qt & # Qt theming is already handled by kde-material-colors
