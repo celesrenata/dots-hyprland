@@ -22,6 +22,7 @@ KeyboardKey 1.0 KeyboardKey.qml
 LightDarkPreferenceButton 1.0 LightDarkPreferenceButton.qml
 MaterialSymbol 1.0 MaterialSymbol.qml
 MaterialTextField 1.0 MaterialTextField.qml
+MaterialTextArea 1.0 MaterialTextArea.qml
 MenuButton 1.0 MenuButton.qml
 NavigationRailButton 1.0 NavigationRailButton.qml
 NavigationRailExpandButton 1.0 NavigationRailExpandButton.qml
