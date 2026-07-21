@@ -60,3 +60,16 @@ StyledText 1.0 StyledText.qml
 StyledToolTip 1.0 StyledToolTip.qml
 VerticalButtonGroup 1.0 VerticalButtonGroup.qml
 WaveVisualizer 1.0 WaveVisualizer.qml
+AppIcon 1.0 AppIcon.qml
+Box 1.0 Box.qml
+BoxLayout 1.0 BoxLayout.qml
+ButtonMouseArea 1.0 ButtonMouseArea.qml
+Circle 1.0 Circle.qml
+Colorizer 1.0 Colorizer.qml
+FadeLoader 1.0 FadeLoader.qml
+MaskMultiEffect 1.0 MaskMultiEffect.qml
+Pill 1.0 Pill.qml
+StateLayer 1.0 StateLayer.qml
+StateOverlay 1.0 StateOverlay.qml
+StyledRectangle 1.0 StyledRectangle.qml
+ScrollEdgeFade 1.0 ScrollEdgeFade.qml
