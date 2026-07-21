@@ -74,6 +74,18 @@ Singleton {
                         "model": "deepseek/deepseek-r1-distill-llama-70b:free",
                         "name": "Custom: DS R1 Dstl. LLaMA 70B",
                         "requires_key": true
+                    },
+                    {
+                        "api_format": "openai",
+                        "description": "OpenAI GPT-4.1 Mini | Fast, cheap, great at structured JSON output",
+                        "endpoint": "https://api.openai.com/v1/chat/completions",
+                        "homepage": "https://platform.openai.com/docs/models",
+                        "icon": "ai-openai-symbolic",
+                        "key_get_link": "https://platform.openai.com/api-keys",
+                        "key_id": "openai",
+                        "model": "gpt-4.1-mini",
+                        "name": "GPT-4.1 Mini",
+                        "requires_key": true
                     }
                 ]
             }
@@ -104,14 +116,13 @@ Singleton {
 
             property JsonObject apps: JsonObject {
                 property string bluetooth: "kcmshell6-bluetooth"
-                property string network: "kcmshell6-network"
+                property string network: "plasmawindowed-network"
                 property string networkEthernet: "kcmshell6-network"
                 property string taskManager: "plasma-systemmonitor --page-name Processes"
                 property string terminal: "kitty -1" // This is only for shell actions
             }
 
             property JsonObject background: JsonObject {
-                property bool showClock: false
                 property bool fixedClockPosition: false
                 property real clockX: -500
                 property real clockY: -500
@@ -171,7 +182,7 @@ Singleton {
             }
 
             property JsonObject dock: JsonObject {
-                property bool enable: true
+                property bool enable: false
                 property bool monochromeIcons: true
                 property real height: 60
                 property real hoverRegionHeight: 2
@@ -195,7 +206,7 @@ Singleton {
                     property bool automatic: true
                     property string from: "19:00" // Format: "HH:mm", 24-hour time
                     property string to: "06:30"   // Format: "HH:mm", 24-hour time
-                    property int colorTemperature: 5000
+                    property int colorTemperature: 4500
                 }
             }
 
@@ -238,9 +249,11 @@ Singleton {
                 property bool sloppy: false // Uses levenshtein distance based scoring instead of fuzzy sort. Very weird.
                 property JsonObject prefix: JsonObject {
                     property string action: "/"
+                    property string ai: "?"
                     property string clipboard: ";"
                     property string emojis: ":"
                 }
+                property int aiDebounceMs: 600
             }
 
             property JsonObject sidebar: JsonObject {
@@ -275,18 +288,6 @@ Singleton {
 
             property JsonObject screenshotTool: JsonObject {
                 property bool showContentRegions: true
-            }
-
-            property JsonObject terminal: JsonObject {
-                property int opacity: 80 // Terminal opacity percentage (10-100)
-                property bool transparency: true // Enable/disable terminal transparency
-            }
-
-            property JsonObject blur: JsonObject {
-                property bool enabled: true
-                property bool xray: false
-                property int size: 8
-                property int passes: 4
             }
         }
     }

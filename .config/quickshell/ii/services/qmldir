@@ -1,7 +1,9 @@
 module qs.services
 
+singleton ActionPalette 1.0 ActionPalette.qml
 singleton Ai 1.0 Ai.qml
 singleton AppSearch 1.0 AppSearch.qml
+singleton AwsCredentialReader 1.0 AwsCredentialReader.qml
 singleton Audio 1.0 Audio.qml
 singleton Battery 1.0 Battery.qml
 singleton Bluetooth 1.0 Bluetooth.qml
@@ -13,6 +15,8 @@ singleton DateTime 1.0 DateTime.qml
 singleton EasyEffects 1.0 EasyEffects.qml
 singleton Emojis 1.0 Emojis.qml
 singleton FirstRunExperience 1.0 FirstRunExperience.qml
+singleton HyprlandAntiFlashbangShader 1.0 HyprlandAntiFlashbangShader.qml
+singleton HyprlandConfig 1.0 HyprlandConfig.qml
 singleton HyprlandData 1.0 HyprlandData.qml
 singleton HyprlandKeybinds 1.0 HyprlandKeybinds.qml
 singleton HyprlandXkb 1.0 HyprlandXkb.qml
@@ -20,6 +24,7 @@ singleton Hyprsunset 1.0 Hyprsunset.qml
 singleton KeyringStorage 1.0 KeyringStorage.qml
 singleton LatexRenderer 1.0 LatexRenderer.qml
 singleton MaterialThemeLoader 1.0 MaterialThemeLoader.qml
+singleton ModelDiscoveryService 1.0 ModelDiscoveryService.qml
 singleton MprisController 1.0 MprisController.qml
 singleton Network 1.0 Network.qml
 singleton Notifications 1.0 Notifications.qml
