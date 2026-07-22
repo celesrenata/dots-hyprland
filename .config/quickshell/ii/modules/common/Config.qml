@@ -60,6 +60,7 @@ Singleton {
             }
 
             property JsonObject ai: JsonObject {
+                property string defaultProvider: "openai" // Provider to auto-discover first on startup: openai, anthropic, gemini, mistral, bedrock, ollama
                 property string systemPrompt: "## Style\n- Use casual tone, don't be formal! Make sure you answer precisely without hallucination and prefer bullet points over walls of text. You can have a friendly greeting at the beginning of the conversation, but don't repeat the user's question\n\n## Context (ignore when irrelevant)\n- You are a helpful and inspiring sidebar assistant on a {DISTRO} Linux system\n- Desktop environment: {DE}\n- Current date & time: {DATETIME}\n- Focused app: {WINDOWCLASS}\n\n## Presentation\n- Use Markdown features in your response: \n  - **Bold** text to **highlight keywords** in your response\n  - **Split long information into small sections** with h2 headers and a relevant emoji at the start of it (for example `## 🐧 Linux`). Bullet points are preferred over long paragraphs, unless you're offering writing support or instructed otherwise by the user.\n- Asked to compare different options? You should firstly use a table to compare the main aspects, then elaborate or include relevant comments from online forums *after* the table. Make sure to provide a final recommendation for the user's use case!\n- Use LaTeX formatting for mathematical and scientific notations whenever appropriate. Enclose all LaTeX '$$' delimiters. NEVER generate LaTeX code in a latex block unless the user explicitly asks for it. DO NOT use LaTeX for regular documents (resumes, letters, essays, CVs, etc.).\n"
                 property string tool: "functions" // search, functions, or none
                 property list<var> extraModels: [
@@ -73,18 +74,6 @@ Singleton {
                         "key_id": "openrouter",
                         "model": "deepseek/deepseek-r1-distill-llama-70b:free",
                         "name": "Custom: DS R1 Dstl. LLaMA 70B",
-                        "requires_key": true
-                    },
-                    {
-                        "api_format": "openai",
-                        "description": "OpenAI GPT-4.1 Mini | Fast, cheap, great at structured JSON output",
-                        "endpoint": "https://api.openai.com/v1/chat/completions",
-                        "homepage": "https://platform.openai.com/docs/models",
-                        "icon": "ai-openai-symbolic",
-                        "key_get_link": "https://platform.openai.com/api-keys",
-                        "key_id": "openai",
-                        "model": "gpt-4.1-mini",
-                        "name": "GPT-4.1 Mini",
                         "requires_key": true
                     }
                 ]
@@ -116,13 +105,14 @@ Singleton {
 
             property JsonObject apps: JsonObject {
                 property string bluetooth: "kcmshell6-bluetooth"
-                property string network: "plasmawindowed-network"
+                property string network: "kcmshell6-network"
                 property string networkEthernet: "kcmshell6-network"
                 property string taskManager: "plasma-systemmonitor --page-name Processes"
                 property string terminal: "kitty -1" // This is only for shell actions
             }
 
             property JsonObject background: JsonObject {
+                property bool showClock: false
                 property bool fixedClockPosition: false
                 property real clockX: -500
                 property real clockY: -500
@@ -182,7 +172,7 @@ Singleton {
             }
 
             property JsonObject dock: JsonObject {
-                property bool enable: false
+                property bool enable: true
                 property bool monochromeIcons: true
                 property real height: 60
                 property real hoverRegionHeight: 2
@@ -206,20 +196,12 @@ Singleton {
                     property bool automatic: true
                     property string from: "19:00" // Format: "HH:mm", 24-hour time
                     property string to: "06:30"   // Format: "HH:mm", 24-hour time
-                    property int colorTemperature: 4500
+                    property int colorTemperature: 5000
                 }
             }
 
             property JsonObject networking: JsonObject {
                 property string userAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36"
-            }
-
-            property JsonObject notifications: JsonObject {
-                property int timeout: 7000
-                property JsonObject forceMonitor: JsonObject {
-                    property bool enable: false
-                    property string name: "" // Name of the monitor to show notifications on, like "eDP-1". Find out with 'hyprctl monitors' command
-                }
             }
 
             property JsonObject osd: JsonObject {
@@ -253,7 +235,6 @@ Singleton {
                     property string clipboard: ";"
                     property string emojis: ":"
                 }
-                property int aiDebounceMs: 600
             }
 
             property JsonObject sidebar: JsonObject {
@@ -288,6 +269,106 @@ Singleton {
 
             property JsonObject screenshotTool: JsonObject {
                 property bool showContentRegions: true
+            }
+
+            property JsonObject terminal: JsonObject {
+                property int opacity: 80 // Terminal opacity percentage (10-100)
+                property bool transparency: true // Enable/disable terminal transparency
+            }
+
+            property JsonObject dictation: JsonObject {
+                property bool enabled: true
+                property string activationKey: "Control_R"
+                property int doubleTapMs: 400
+                property int debounceMs: 500 // Debounce window (ms) after activation; 0-2000, 0 disables
+                property int silenceTimeoutMs: 3000
+                property int maxDurationMs: 60000
+                property string provider: "openai"
+                property string model: "whisper-1"
+                property string streamingEndpoint: ""
+                property int chunkDurationMs: 3000
+                property string ttsProvider: "openai" // none, piper, espeak-ng, openai
+                property string ttsVoice: "nova" // Provider-specific voice ID
+                property bool talkback: true // Enable TTS playback
+                property string verbosity: "concise" // concise, normal, detailed
+                property string intentMode: "heuristic" // heuristic, ai
+                property string httpEndpoint: "" // HTTP batch endpoint for STT
+                property string ttsHttpEndpoint: "" // HTTP endpoint for OpenAI-compatible TTS
+                property bool smartRouting: false // Smart Dictation Routing — route voice input by intent
+                property string voiceBackend: "none" // "none" | "nova-sonic" | "openai-realtime"
+                property string voiceSystemPrompt: "You are a helpful voice assistant on a Linux desktop (Hyprland + Quickshell). You can execute shell commands, control the desktop, check system info, get weather data, and launch apps. Keep answers concise and conversational — the user is listening, not reading. Current date & time: {DATETIME}. Respond in 1-3 sentences unless the user asks for detail."
+
+                // Local STT provider configurations
+                property JsonObject sttProviders: JsonObject {
+                    property JsonObject whisperCpp: JsonObject {
+                        property string endpoint: "http://localhost:8080"
+                        property string protocol: "rest"
+                        property string model: "base.en"
+                        property string language: "en"
+                        property real temperature: 0.0
+                    }
+                    property JsonObject fasterWhisper: JsonObject {
+                        property string endpoint: "http://localhost:8000"
+                        property string protocol: "rest"
+                        property string model: "base"
+                        property string language: "en"
+                        property real temperature: 0.0
+                    }
+                    property JsonObject vosk: JsonObject {
+                        property string endpoint: "ws://localhost:2700"
+                        property string protocol: "websocket"
+                        property string model: "vosk-model-en-us-0.22"
+                        property string language: "en"
+                    }
+                    property JsonObject whisperLive: JsonObject {
+                        property string endpoint: "ws://localhost:9090"
+                        property string protocol: "websocket"
+                        property string model: "base.en"
+                        property string language: "en"
+                    }
+                }
+
+                // Local TTS provider configurations
+                property JsonObject ttsProviders: JsonObject {
+                    property JsonObject piper: JsonObject {
+                        property string endpoint: "tcp://localhost:10200"
+                        property string protocol: "wyoming"
+                        property string voice: "en_US-lessac-medium"
+                        property string model: ""
+                    }
+                    property JsonObject coqui: JsonObject {
+                        property string endpoint: "http://localhost:5002"
+                        property string protocol: "rest"
+                        property string voice: "tts_models/en/ljspeech/tacotron2-DDC"
+                        property string language: "en"
+                    }
+                    property JsonObject mimic3: JsonObject {
+                        property string endpoint: "http://localhost:59125"
+                        property string protocol: "rest"
+                        property string voice: "en_US/ljspeech_low"
+                        property string language: "en"
+                    }
+                    property JsonObject espeakNg: JsonObject {
+                        property string voice: "en"
+                        property int speed: 175
+                        property int pitch: 50
+                    }
+                }
+            }
+
+            property JsonObject blur: JsonObject {
+                property bool enabled: true
+                property bool xray: false
+                property int size: 8
+                property int passes: 4
+            }
+
+            property JsonObject notifications: JsonObject {
+                property int timeout: 7000
+                property JsonObject forceMonitor: JsonObject {
+                    property bool enable: false
+                    property string name: "" // Name of the monitor to show notifications on, like "eDP-1". Find out with 'hyprctl monitors' command
+                }
             }
         }
     }

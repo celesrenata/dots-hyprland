@@ -8,21 +8,49 @@ ApiStrategy {
         return model.endpoint;
     }
 
-    function buildRequestData(model: AiModel, messages, systemPrompt: string, temperature: real, tools: list<var>) {
+    function buildRequestData(model: AiModel, messages, systemPrompt: string, temperature: real, tools: list<var>, tuning: var) {
         let baseData = {
             "model": model.model,
             "messages": [
                 {role: "system", content: systemPrompt},
                 ...messages.map(message => {
+                    // Build multimodal content if message has images
+                    var hasImages = message.images && message.images.length > 0;
                     return {
                         "role": message.role,
-                        "content": message.rawContent,
+                        "content": hasImages
+                            ? [
+                                { type: "text", text: message.rawContent },
+                                ...message.images.map(img => ({
+                                    type: "image_url",
+                                    image_url: { url: "data:image/png;base64," + img }
+                                }))
+                            ]
+                            : message.rawContent,
                     }
                 }),
             ],
             "stream": true,
             "temperature": temperature,
         };
+
+        // Apply per-model tuning: reasoning_effort
+        if (tuning && tuning.reasoningEffort && tuning.reasoningEffort.length > 0) {
+            baseData["reasoning_effort"] = tuning.reasoningEffort;
+        }
+
+        // Apply per-model tuning: verbosity
+        if (tuning && tuning.verbosity && tuning.verbosity.length > 0) {
+            baseData["verbosity"] = tuning.verbosity;
+        }
+
+        // Apply per-model tuning: web_search_options
+        if (tuning && tuning.webSearch) {
+            baseData["web_search_options"] = {
+                "search_context_size": tuning.searchContextSize || "medium",
+            };
+        }
+
         return model.extraParams ? Object.assign({}, baseData, model.extraParams) : baseData;
     }
 

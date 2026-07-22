@@ -35,8 +35,17 @@ colorstrings=''
 colorlist=()
 colorvalues=()
 
-colornames=$(cat $STATE_DIR/user/generated/material_colors.scss | cut -d: -f1)
-colorstrings=$(cat $STATE_DIR/user/generated/material_colors.scss | cut -d: -f2 | cut -d ' ' -f2 | cut -d ";" -f1)
+SCSS_FILE="$STATE_DIR/user/generated/material_colors.scss"
+JSON_FILE="$STATE_DIR/user/generated/colors.json"
+
+if [ -s "$SCSS_FILE" ]; then
+  colornames=$(cut -d: -f1 "$SCSS_FILE")
+  colorstrings=$(cut -d: -f2 "$SCSS_FILE" | cut -d ' ' -f2 | cut -d ";" -f1)
+elif [ -s "$JSON_FILE" ]; then
+  # Fallback: read from colors.json when scss generation failed
+  colornames=$(jq -r 'to_entries[] | "$\(.key)"' "$JSON_FILE")
+  colorstrings=$(jq -r 'to_entries[] | .value' "$JSON_FILE")
+fi
 IFS=$'\n'
 colorlist=($colornames)     # Array of color names
 colorvalues=($colorstrings) # Array of color values
@@ -58,13 +67,13 @@ apply_term() {
 
   sed -i "s/\$alpha/$term_alpha/g" "$STATE_DIR/user/generated/terminal/sequences.txt"
 
+  # Send escape sequences to all terminals
   for file in /dev/pts/*; do
     if [[ $file =~ ^/dev/pts/[0-9]+$ ]]; then
-      {
-      cat "$STATE_DIR"/user/generated/terminal/sequences.txt >"$file"
-      } & disown || true
+      cat "$STATE_DIR"/user/generated/terminal/sequences.txt >"$file" 2>/dev/null &
     fi
   done
+  wait
 }
 
 
@@ -223,16 +232,16 @@ CONFIG_FILE="$XDG_CONFIG_HOME/illogical-impulse/config.json"
 if [ -f "$CONFIG_FILE" ]; then
   enable_terminal=$(jq -r '.appearance.wallpaperTheming.enableTerminal' "$CONFIG_FILE")
   if [ "$enable_terminal" = "true" ]; then
-    apply_term &
-    apply_foot &
-    apply_fuzzel &
-    apply_wofi &
+    apply_term
+    apply_foot
+    apply_fuzzel
+    apply_wofi
   fi
 else
   echo "Config file not found at $CONFIG_FILE. Applying terminal theming by default."
-  apply_term &
-  apply_foot &
-  apply_fuzzel &
-  apply_wofi &
+  apply_term
+  apply_foot
+  apply_fuzzel
+  apply_wofi
 fi
 

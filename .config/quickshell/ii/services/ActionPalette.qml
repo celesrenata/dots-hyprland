@@ -135,6 +135,7 @@ Singleton {
     signal previewStarted()
     signal previewEnded()
     signal approvalRequired(string command, int actionIndex)
+    signal responseSummary(string text)
 
     // === Supported action types and their required parameters ===
     readonly property var supportedActionTypes: ({
@@ -180,8 +181,16 @@ Singleton {
                 root._executeConfigSet(action);
                 break;
             case "shell.exec":
-                // Pause execution — emit approval signal, wait for approve/reject
-                root.approvalRequired(action.command, root._executionIndex);
+                if (root._directMode) {
+                    // Voice assistant mode: auto-execute shell commands without approval
+                    root._directModeCapture = true;
+                    shellExecProcess.command = shellExecProcess.baseCommand.concat([action.command]);
+                    shellExecTimeout.restart();
+                    shellExecProcess.running = true;
+                } else {
+                    // Interactive mode: pause and wait for user approval
+                    root.approvalRequired(action.command, root._executionIndex);
+                }
                 break;
             case "hyprland.dispatch":
                 root._executeHyprlandDispatch(action);
@@ -304,10 +313,10 @@ Singleton {
         }
     }
 
-    // === 30-second request timeout timer ===
+    // === 45-second request timeout timer ===
     Timer {
         id: requestTimeoutTimer
-        interval: 30000
+        interval: 45000
         repeat: false
         onTriggered: () => {
             llmProcess.running = false;  // Kill process
@@ -376,24 +385,36 @@ Singleton {
     }
 
     // === Shell command execution process (for shell.exec actions) ===
+    // Captured shell output for direct-mode summarization
+    property string _shellOutput: ""
+    property bool _directModeCapture: false
+
     Process {
         id: shellExecProcess
         property list<string> baseCommand: ["bash", "-c"]
         stdout: StdioCollector {
             onStreamFinished: {
+                console.log("[ActionPalette] shellExecProcess stdout finished, length=" + text.length);
                 shellExecTimeout.stop();
-                // Exit handled in onExited
+                root._shellOutput = text;
             }
         }
         onExited: (exitCode, exitStatus) => {
+            console.log("[ActionPalette] shellExecProcess exited: code=" + exitCode + " _directModeCapture=" + root._directModeCapture + " outputLen=" + root._shellOutput.length);
             shellExecTimeout.stop();
             if (exitCode !== 0) {
                 root._executionFailed("shell.exec", root._executionIndex,
                     `Command exited with code ${exitCode}`);
             } else {
-                // Success — advance to next action
-                root._executionIndex++;
-                root._executeNext();
+                // If in direct-mode capture and we have output, summarize it
+                if (root._directModeCapture && root._shellOutput.trim().length > 0) {
+                    console.log("[ActionPalette] calling _summarizeShellOutput");
+                    root._summarizeShellOutput(root._shellOutput);
+                } else {
+                    // Success — advance to next action
+                    root._executionIndex++;
+                    root._executeNext();
+                }
             }
         }
     }
@@ -406,6 +427,149 @@ Singleton {
         onTriggered: () => {
             shellExecProcess.running = false;
             root._executionFailed("shell.exec", root._executionIndex, "Command timed out (30s)");
+        }
+    }
+
+    /**
+     * Summarizes shell command output for the user in direct (voice) mode.
+     * Sends the output + original query to the LLM for a brief spoken summary.
+     * On completion, emits a new responseSummary with the actual answer.
+     */
+    function _summarizeShellOutput(output) {
+        // Truncate output to avoid token overload (keep first 4000 chars)
+        var truncatedOutput = output.length > 4000 ? output.substring(0, 4000) + "\n[...truncated]" : output;
+
+        var summaryPrompt = "You received the output of a command that was run to answer a user's voice query. " +
+            "Summarize the output into a brief, spoken-language answer. Be direct — just give the key info. " +
+            "Filter out noise (virtual filesystems, tmpfs, irrelevant entries). " +
+            "No markdown, no tables, no code blocks. Max 2-3 sentences.\n\n" +
+            "User's original question: " + root.lastQuery + "\n\n" +
+            "Command output:\n" + truncatedOutput + "\n\n" +
+            "Your brief answer:";
+
+        var model = Ai.models[Ai.currentModelId];
+        if (!model) {
+            root._directModeCapture = false;
+            root._shellOutput = "";
+            root._executionIndex++;
+            root._executeNext();
+            return;
+        }
+
+        // Skip summarization for Bedrock (uses CLI, not curl) — just advance
+        if ((model.api_format || "openai") === "bedrock") {
+            root._directModeCapture = false;
+            root._shellOutput = "";
+            root._executionIndex++;
+            root._executeNext();
+            return;
+        }
+
+        var strategy = root._getStrategy(model);
+        if (!strategy) {
+            root._directModeCapture = false;
+            root._shellOutput = "";
+            root._executionIndex++;
+            root._executeNext();
+            return;
+        }
+
+        strategy.reset();
+        var endpoint = strategy.buildEndpoint(model);
+        var fakeMessages = [{
+            role: "user",
+            rawContent: summaryPrompt,
+            images: [],
+            functionName: "",
+            functionCall: undefined,
+            functionResponse: "",
+        }];
+        var sysPrompt = "You are a concise voice assistant. Give only the direct answer in spoken language.";
+        var data = strategy.buildRequestData(model, fakeMessages, sysPrompt, 0.3, []);
+
+        var requestHeaders = { "Content-Type": "application/json" };
+        var headerString = Object.entries(requestHeaders)
+            .filter(function(entry) { return entry[1] && entry[1].length > 0; })
+            .map(function(entry) { return "-H '" + entry[0] + ": " + entry[1] + "'"; })
+            .join(' ');
+        var authHeader = strategy.buildAuthorizationHeader(Ai.apiKeyEnvVarName);
+
+        if (model.requires_key) {
+            summarizeProcess.environment = {};
+            summarizeProcess.environment[Ai.apiKeyEnvVarName] = Ai.apiKeys ? (Ai.apiKeys[model.key_id] || "") : "";
+        }
+
+        var requestString = 'curl -s --no-buffer "' + endpoint + '"'
+            + ' ' + headerString
+            + (authHeader ? ' ' + authHeader : "")
+            + " -d '" + CF.StringUtils.shellSingleQuoteEscape(JSON.stringify(data)) + "'";
+
+        summarizeProcess.currentStrategy = strategy;
+        summarizeProcess.responseBuffer = "";
+        summarizeProcess.command = summarizeProcess.baseCommand.concat([requestString]);
+        summarizeProcess.running = true;
+    }
+
+    // Helper to get strategy for a model
+    function _getStrategy(model) {
+        var format = model.api_format || "openai";
+        return Ai.apiStrategies[format] || Ai.apiStrategies["openai"];
+    }
+
+    // === Summarization process for shell output in direct mode ===
+    Process {
+        id: summarizeProcess
+        property list<string> baseCommand: ["bash", "-c"]
+        property var currentStrategy: null
+        property string responseBuffer: ""
+
+        stdout: StdioCollector {
+            onStreamFinished: {
+                // Parse streamed response to extract text
+                var result = "";
+                var lines = text.split("\n");
+                for (var i = 0; i < lines.length; i++) {
+                    var line = lines[i].trim();
+                    if (line.startsWith("data: ")) line = line.substring(6);
+                    if (line === "[DONE]" || line.length === 0) continue;
+                    try {
+                        var parsed = JSON.parse(line);
+                        // OpenAI format
+                        if (parsed.choices && parsed.choices[0]) {
+                            var delta = parsed.choices[0].delta || parsed.choices[0].message || {};
+                            if (delta.content) result += delta.content;
+                        }
+                        // Gemini format
+                        else if (parsed.candidates && parsed.candidates[0]) {
+                            var parts = parsed.candidates[0].content?.parts;
+                            if (parts && parts[0] && parts[0].text) result += parts[0].text;
+                        }
+                    } catch (e) {
+                        // Non-JSON line, skip
+                    }
+                }
+
+                if (result.trim().length > 0) {
+                    // Emit updated summary with the actual answer
+                    root.responseSummary(result.trim());
+                }
+
+                // Continue execution
+                root._directModeCapture = false;
+                root._shellOutput = "";
+                root._executionIndex++;
+                root._executeNext();
+            }
+        }
+
+        onExited: (exitCode, exitStatus) => {
+            if (exitCode !== 0 && summarizeProcess.responseBuffer === "") {
+                // Summarization failed — just advance without updating summary
+                root._directModeCapture = false;
+                root._shellOutput = "";
+                root._executionIndex++;
+                root._executeNext();
+            }
         }
     }
 
@@ -440,6 +604,28 @@ Singleton {
         root.lastQuery = queryText;
         root.state = ActionPalette.Debouncing;
         debounceTimer.restart();
+    }
+
+    /**
+     * Direct query submission for voice assistant mode.
+     * Does NOT require overview to be open. Skips debounce.
+     * Appends extraSystemPrompt to the LLM system prompt for this request.
+     * Emits responseSummary when the plan's summary is available.
+     * Auto-executes safe actions, emits approvalRequired for shell.exec.
+     */
+    function submitQueryDirect(queryText, extraSystemPrompt) {
+        root.lastQuery = queryText;
+        root._directMode = true;
+        root._extraSystemPrompt = extraSystemPrompt || "";
+        root.state = ActionPalette.Loading;
+        root._sendLlmRequest(queryText);
+    }
+
+    property bool _directMode: false
+    property string _extraSystemPrompt: ""
+
+    function _sendLlmRequest(queryText) {
+        root.sendRequest();
     }
 
     function cancelRequest() {
@@ -504,23 +690,33 @@ Singleton {
             }
         }
 
-        // Run shell commands via delayed Timer (ensures dispatch fires after click handler)
-        // Wrap non-silent commands in a terminal so output is visible to the user
+        // Run shell commands
         if (shellCommands.length > 0) {
-            var wrappedCommands = shellCommands.map(function(cmd) {
-                var isSilent = /^(pkill|kill|killall|systemctl|hyprctl|notify-send|xdg-open|nohup|sleep)\b/.test(cmd)
-                    || /&\s*$/.test(cmd)
-                    || />\s*\/dev\/null/.test(cmd)
-                    || /^sleep\s/.test(cmd);
-                if (isSilent) {
-                    return cmd;
-                } else {
-                    return "foot -e bash -c '" + cmd.replace(/'/g, "'\\''") + "; echo; echo Press Enter to close...; read'";
-                }
-            });
-            console.log("[ActionPalette] queuing " + wrappedCommands.length + " commands for delayed dispatch");
-            root._pendingCommands = wrappedCommands;
-            execDelayTimer.start();
+            if (root._directModeCapture) {
+                // Voice assistant mode: run silently in background, capture output for summarization
+                var combinedCmd = shellCommands.join(" && ");
+                console.log("[ActionPalette] running in background (direct mode): " + combinedCmd);
+                shellExecProcess.command = shellExecProcess.baseCommand.concat([combinedCmd]);
+                root._shellOutput = "";
+                shellExecProcess.running = true;
+                shellExecTimeout.start();
+            } else {
+                // Normal mode: wrap non-silent commands in a terminal so output is visible to the user
+                var wrappedCommands = shellCommands.map(function(cmd) {
+                    var isSilent = /^(pkill|kill|killall|systemctl|hyprctl|notify-send|xdg-open|nohup|sleep)\b/.test(cmd)
+                        || /&\s*$/.test(cmd)
+                        || />\s*\/dev\/null/.test(cmd)
+                        || /^sleep\s/.test(cmd);
+                    if (isSilent) {
+                        return cmd;
+                    } else {
+                        return "foot -e bash -c '" + cmd.replace(/'/g, "'\\''") + "; echo; echo Press Enter to close...; read'";
+                    }
+                });
+                console.log("[ActionPalette] queuing " + wrappedCommands.length + " commands for delayed dispatch");
+                root._pendingCommands = wrappedCommands;
+                execDelayTimer.start();
+            }
         }
 
         root.state = ActionPalette.Idle;
@@ -763,7 +959,9 @@ Configuration key namespaces (use with config.set):
 
 Rules:
 - Return ONLY valid JSON, no markdown, no explanation text
-- summary must be ≤ 200 characters
+- summary must be ≤ 200 characters and must ONLY contain the direct answer or result — NEVER explain your reasoning, thought process, or why you chose a particular approach. Just state the answer.
+  Examples: "It's 3:42 PM" NOT "I'll show you the time: it's 3:42 PM"
+            "Volume set to 80%" NOT "Since you asked to turn it up, I've set volume to 80%"
 - actions array must have ≤ 20 items
 - Each action must have a "type" field and all required parameters for that type
 - Prefer config.set over shell.exec when possible (safer, reversible)
@@ -776,7 +974,9 @@ Rules:
 - ALWAYS use "pkill -f" instead of plain "pkill" — this is NixOS where binary names are wrapped
 - When launching an app after killing it, combine with a delay: "sleep 1 && appname"
 - Do NOT put & at the end of commands — Hyprland exec handles backgrounding
-- For shell.exec, prefer commands that produce useful visible output`;
+- For shell.exec, prefer commands that produce useful visible output
+- The "summary" field is shown directly to the user as a notification/popup. When the query is informational (asking about system status, disk space, etc.), put the ANSWER in the summary. Distill command output into what the user actually wants to know — e.g., "You have 234GB free on your main drive" not "Here are the results of df -h"
+- For status queries, filter out noise: ignore virtual filesystems, tmpfs, snap mounts, duplicate entries. Report only the drives/info the user cares about.`;
     }
 
     // === Internal: Policy gates ===
@@ -793,6 +993,7 @@ Rules:
     function checkPolicyGates() {
         // 1. AI completely disabled
         if (Config.options.policies.ai === 0) {
+            console.log("[ActionPalette] Gate BLOCKED: AI disabled by policy")
             root.errorMessage = "AI is disabled by policies.ai configuration";
             root.state = ActionPalette.Error;
             root.canRetry = false;
@@ -801,27 +1002,53 @@ Rules:
 
         // 2. No valid model selected
         if (!Ai.currentModelId || !Ai.models[Ai.currentModelId]) {
-            root.errorMessage = "Select a model in the AI sidebar";
-            root.state = ActionPalette.Error;
-            root.canRetry = false;
-            return false;
+            // Model might not be loaded yet (provider discovery pending) — fall back to first available
+            if (Ai.modelList.length > 0 && Ai.models[Ai.modelList[0]]) {
+                console.log("[ActionPalette] Model '" + Ai.currentModelId + "' not found, falling back to " + Ai.modelList[0])
+                Ai.setModel(Ai.modelList[0], false, false);
+            } else {
+                console.log("[ActionPalette] Gate BLOCKED: No model. currentModelId=" + Ai.currentModelId)
+                root.errorMessage = "Select a model in the AI sidebar";
+                root.state = ActionPalette.Error;
+                root.canRetry = false;
+                return false;
+            }
         }
 
         // 3. Local-only policy with online model
         const endpoint = Ai.models[Ai.currentModelId]?.endpoint || "";
         if (Config.options.policies.ai === 2 && !endpoint.includes("localhost")) {
+            console.log("[ActionPalette] Gate BLOCKED: Online model disallowed")
             root.errorMessage = "Online models are disallowed by policies.ai configuration";
             root.state = ActionPalette.Error;
             root.canRetry = false;
             return false;
         }
 
-        // 4. Missing API key
+        // 4. Missing API key — try to fall back to a model that has one
         if (!Ai.currentModelHasApiKey) {
-            root.errorMessage = "Set an API key via /key in the AI sidebar";
-            root.state = ActionPalette.Error;
-            root.canRetry = false;
-            return false;
+            // Try to find another model that has a key
+            var foundFallback = false;
+            for (var i = 0; i < Ai.modelList.length; i++) {
+                var mId = Ai.modelList[i];
+                var m = Ai.models[mId];
+                if (!m) continue;
+                if (!m.requires_key) { foundFallback = true; Ai.setModel(mId, false, false); break; }
+                var keyId = m.key_id || mId;
+                if (Ai.apiKeys && Ai.apiKeys[keyId] && Ai.apiKeys[keyId].length > 0) {
+                    foundFallback = true;
+                    console.log("[ActionPalette] Falling back to model with key: " + mId);
+                    Ai.setModel(mId, false, false);
+                    break;
+                }
+            }
+            if (!foundFallback) {
+                console.log("[ActionPalette] Gate BLOCKED: No API key for model " + Ai.currentModelId)
+                root.errorMessage = "Set an API key via /key in the AI sidebar";
+                root.state = ActionPalette.Error;
+                root.canRetry = false;
+                return false;
+            }
         }
 
         return true;
@@ -829,7 +1056,9 @@ Rules:
 
     // === Internal: Send request to LLM ===
     function sendRequest() {
+        console.log("[ActionPalette] sendRequest called, query: " + root.lastQuery.substring(0, 50))
         if (!root.checkPolicyGates()) {
+            console.log("[ActionPalette] Policy gates blocked request")
             return;
         }
 
@@ -847,7 +1076,7 @@ Rules:
         /* Build messages: system prompt + single user message (no chat history) */
         const context = root.buildActionContext();
         const userContent = root.lastQuery + "\n\nCurrent desktop context:\n" + JSON.stringify(context, null, 2);
-        const systemPrompt = root.buildSystemPrompt();
+        const systemPrompt = root.buildSystemPrompt() + (root._extraSystemPrompt ? "\n\n" + root._extraSystemPrompt : "");
 
         /* Build request data via the strategy pattern */
         const fakeMessages = [{
@@ -983,6 +1212,28 @@ Rules:
         root.canRetry = false;
         root.errorMessage = "";
         root.actionPlanReady();
+
+        // In direct mode (voice assistant), auto-execute and emit summary
+        if (root._directMode) {
+            if (root.actionPlan.actions.length > 0) {
+                // Check if there are shell.exec actions that will produce output
+                var hasShellExec = root.actionPlan.actions.some(function(a) { return a.type === "shell.exec"; });
+                if (hasShellExec) {
+                    // Don't emit summary yet — wait for shell output summarization
+                    root._directModeCapture = true;
+                    root.applyPlan();
+                } else {
+                    // No shell commands — emit plan summary immediately and execute
+                    root.responseSummary(root.actionPlan.summary || "Done");
+                    root.applyPlan();
+                }
+            } else {
+                // No actions — just emit the summary as-is
+                root.responseSummary(root.actionPlan.summary || "Done");
+            }
+            root._directMode = false;
+            root._extraSystemPrompt = "";
+        }
     }
 
     /**
@@ -1002,10 +1253,23 @@ Rules:
             floating: w.floating || false,
             focused: w.focusHistoryID === 0
         }));
+        const monitors = HyprlandData.monitors.map(m => ({
+            name: m.name || "",
+            width: m.width || 0,
+            height: m.height || 0,
+            refreshRate: m.refreshRate || 0,
+            x: m.x || 0,
+            y: m.y || 0,
+            scale: m.scale || 1,
+            focused: m.focused || false,
+            activeWorkspace: m.activeWorkspace?.id ?? -1,
+            description: m.description || ""
+        }));
         const activeWorkspace = HyprlandData.activeWorkspace?.id ?? 1;
         return {
             config: config,
             windows: windows,
+            monitors: monitors,
             activeWorkspace: activeWorkspace
         };
     }
@@ -1022,6 +1286,232 @@ Rules:
             obj = obj[part];
         }
         return obj;
+    }
+
+    // ═══ Tool Direct Execution (for streaming voice agent) ═══════════════
+
+    // Callback for the current executeToolDirect invocation
+    property var _toolDirectCallback: null
+    property string _toolDirectOutput: ""
+
+    /**
+     * Execute a named tool directly, bypassing LLM reasoning.
+     * Used by VoiceAgentService for streaming tool calls where the backend
+     * has already decided which tool to invoke.
+     *
+     * @param toolName  Tool identifier from backend (e.g., "shell_exec", "config_set")
+     * @param arguments Object with tool-specific parameters
+     * @param callback  Function receiving {result: string, isError: bool}
+     *
+     * Requirements: 8.1, 8.2, 8.3, 8.5, 8.6
+     */
+    function executeToolDirect(toolName, arguments, callback) {
+        // Clear any previous state
+        root._toolDirectCallback = callback;
+        root._toolDirectOutput = "";
+
+        // Start 15s timeout
+        toolDirectTimeout.restart();
+
+        switch (toolName) {
+            case "shell_exec":
+                root._executeToolDirectShell(
+                    (typeof arguments === "object" ? arguments.command : arguments) || "", callback);
+                break;
+            case "config_set":
+                root._executeToolDirectConfigSet(arguments, callback);
+                break;
+            case "config_get":
+                root._executeToolDirectConfigGet(arguments, callback);
+                break;
+            case "hyprland_dispatch":
+                root._executeToolDirectHyprlandDispatch(arguments, callback);
+                break;
+            case "app_launch":
+                root._executeToolDirectAppLaunch(arguments, callback);
+                break;
+            case "system_info":
+                root._executeToolDirectShell("uname -srm && free -h | head -2 && df -h / | tail -1", callback);
+                break;
+            case "weather":
+                root._executeToolDirectWeather(callback);
+                break;
+            default:
+                toolDirectTimeout.stop();
+                root._toolDirectCallback = null;
+                callback({ result: "Unknown tool: " + toolName, isError: true });
+                break;
+        }
+    }
+
+    /**
+     * Internal: Execute a shell command for tool-direct and return output via callback.
+     */
+    function _executeToolDirectShell(command, callback) {
+        if (!command || command.length === 0) {
+            toolDirectTimeout.stop();
+            root._toolDirectCallback = null;
+            callback({ result: "No command provided", isError: true });
+            return;
+        }
+        toolDirectProcess.command = ["bash", "-c", command];
+        toolDirectProcess.running = true;
+    }
+
+    /**
+     * Internal: Execute a config.set for tool-direct.
+     */
+    function _executeToolDirectConfigSet(args, callback) {
+        toolDirectTimeout.stop();
+        root._toolDirectCallback = null;
+
+        var key = args.key || "";
+        var value = args.value;
+        if (!key) {
+            callback({ result: "Missing 'key' parameter", isError: true });
+            return;
+        }
+        try {
+            Config.setNestedValue(key, value);
+            callback({ result: "Set " + key + " = " + JSON.stringify(value), isError: false });
+        } catch (e) {
+            callback({ result: "Failed to set " + key + ": " + e, isError: true });
+        }
+    }
+
+    /**
+     * Internal: Execute a config.get for tool-direct (read a config value).
+     */
+    function _executeToolDirectConfigGet(args, callback) {
+        toolDirectTimeout.stop();
+        root._toolDirectCallback = null;
+
+        var key = args.key || "";
+        if (!key) {
+            callback({ result: "Missing 'key' parameter", isError: true });
+            return;
+        }
+        var value = root.getNestedValue(key);
+        if (value === undefined) {
+            callback({ result: "Key not found: " + key, isError: true });
+        } else {
+            callback({ result: JSON.stringify(value), isError: false });
+        }
+    }
+
+    /**
+     * Internal: Execute a hyprland.dispatch for tool-direct.
+     */
+    function _executeToolDirectHyprlandDispatch(args, callback) {
+        toolDirectTimeout.stop();
+        root._toolDirectCallback = null;
+
+        var dispatcher = args.dispatcher || "";
+        var dispatchArgs = args.args || "";
+        if (!dispatcher) {
+            callback({ result: "Missing 'dispatcher' parameter", isError: true });
+            return;
+        }
+        try {
+            Hyprland.dispatch(dispatcher + " " + dispatchArgs);
+            callback({ result: "Dispatched: " + dispatcher + " " + dispatchArgs, isError: false });
+        } catch (e) {
+            callback({ result: "Dispatch failed: " + e, isError: true });
+        }
+    }
+
+    /**
+     * Internal: Execute an app.launch for tool-direct.
+     */
+    function _executeToolDirectAppLaunch(args, callback) {
+        toolDirectTimeout.stop();
+        root._toolDirectCallback = null;
+
+        var appId = args.id || "";
+        if (!appId) {
+            callback({ result: "Missing 'id' parameter", isError: true });
+            return;
+        }
+        var entry = DesktopEntries.byId(appId);
+        if (!entry) {
+            callback({ result: "Application not found: " + appId, isError: true });
+            return;
+        }
+        try {
+            entry.execute();
+            callback({ result: "Launched: " + appId, isError: false });
+        } catch (e) {
+            callback({ result: "Failed to launch " + appId + ": " + e, isError: true });
+        }
+    }
+
+    /**
+     * Internal: Return current weather data from the Weather service singleton.
+     */
+    function _executeToolDirectWeather(callback) {
+        toolDirectTimeout.stop();
+        root._toolDirectCallback = null;
+
+        var w = Weather.data;
+        if (!w || !w.city || w.city === 0) {
+            callback({ result: "Weather data not available. The weather service may still be loading.", isError: true });
+            return;
+        }
+        var summary = "Weather in " + w.city + ": " + w.temp
+            + ", Humidity: " + w.humidity
+            + ", Wind: " + w.wind + " " + w.windDir
+            + ", UV: " + w.uv
+            + ", Precipitation: " + w.precip
+            + ", Visibility: " + w.visib
+            + ", Pressure: " + w.press;
+        callback({ result: summary, isError: false });
+    }
+
+    // === Tool Direct Process (separate from shellExecProcess to avoid conflicts) ===
+    Process {
+        id: toolDirectProcess
+        property list<string> baseCommand: ["bash", "-c"]
+
+        stdout: StdioCollector {
+            onStreamFinished: {
+                root._toolDirectOutput = text;
+            }
+        }
+
+        onExited: (exitCode, exitStatus) => {
+            toolDirectTimeout.stop();
+            var cb = root._toolDirectCallback;
+            root._toolDirectCallback = null;
+
+            if (!cb) return;
+
+            if (exitCode !== 0) {
+                var errMsg = root._toolDirectOutput.trim() || ("Command exited with code " + exitCode);
+                cb({ result: errMsg, isError: true });
+            } else {
+                var output = root._toolDirectOutput.trim() || "(no output)";
+                // Truncate to 4000 chars to avoid overwhelming the backend
+                if (output.length > 4000) {
+                    output = output.substring(0, 4000) + "\n[...truncated]";
+                }
+                cb({ result: output, isError: false });
+            }
+        }
+    }
+
+    // === 15-second tool-direct execution timeout ===
+    Timer {
+        id: toolDirectTimeout
+        interval: 15000
+        repeat: false
+        onTriggered: () => {
+            toolDirectProcess.running = false;
+            var cb = root._toolDirectCallback;
+            root._toolDirectCallback = null;
+            if (cb) {
+                cb({ result: "Tool execution timed out (15s)", isError: true });
+            }
+        }
     }
 
     /**

@@ -8,13 +8,25 @@ ApiStrategy {
 
     // Convert messages to Bedrock Converse API format.
     // System prompt goes in top-level "system" array, not in messages.
-    function buildRequestData(model: AiModel, messages, systemPrompt: string, temperature: real, tools: list<var>) {
+    function buildRequestData(model: AiModel, messages, systemPrompt: string, temperature: real, tools: list<var>, tuning: var) {
         var convertedMessages = [];
         for (var i = 0; i < messages.length; i++) {
             var msg = messages[i];
+            var contentBlocks = [{ text: msg.rawContent }];
+            // Add image blocks if present
+            if (msg.images && msg.images.length > 0) {
+                for (var j = 0; j < msg.images.length; j++) {
+                    contentBlocks.push({
+                        image: {
+                            format: "png",
+                            source: { bytes: msg.images[j] }
+                        }
+                    });
+                }
+            }
             convertedMessages.push({
                 role: msg.role,
-                content: [{ text: msg.rawContent }]
+                content: contentBlocks
             });
         }
         var system = [];

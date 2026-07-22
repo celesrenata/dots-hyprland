@@ -2,115 +2,184 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import Quickshell
-import Quickshell.Io
+import Quickshell.Services.SystemdUser
 
 // Transparency and Blur Settings Module
-// Uses applycolor.sh for terminal opacity and hyprctl for blur settings.
+// Based on AGS configuration from ~/.config/ags/modules/sideright/centermodules/configure.js
 
 Rectangle {
     id: transparencySettings
     
     property bool globalTransparency: false
-    property int terminalOpacity: 60
+    property int terminalOpacity: 100
     property bool blurEnabled: false
     property bool blurXray: true
     property int blurSize: 8
     property int blurPasses: 4
-
-    readonly property string stateDir: (Qt.resolvedUrl("").toString().indexOf("/.config/") !== -1)
-        ? (Qt.resolvedUrl("").toString().split("/.config/")[0].replace("file://", "") + "/.local/state/quickshell")
-        : ""
-    readonly property string scriptDir: (Qt.resolvedUrl("").toString().indexOf("/.config/") !== -1)
-        ? (Qt.resolvedUrl("").toString().split("/.config/")[0].replace("file://", "") + "/.config/quickshell/scripts/colors")
-        : ""
-
+    
+    // Storage paths (matching AGS structure)
+    property string colorModeFile: StandardPaths.writableLocation(StandardPaths.CacheLocation) + "/ags/user/colormode.txt"
+    property string terminalTransparencyFile: StandardPaths.writableLocation(StandardPaths.CacheLocation) + "/ags/user/generated/terminal/transparency"
+    
     color: "transparent"
     
     Component.onCompleted: {
-        loadOpacity.running = true
-        loadBlur.running = true
+        loadSettings()
     }
-
-    // Load terminal opacity from file
-    Process {
-        id: loadOpacity
-        command: ["bash", "-c", "cat '" + transparencySettings.stateDir + "/user/generated/terminal/opacity' 2>/dev/null || echo '60'"]
-        stdout: SplitParser {
-            onRead: data => {
-                let val = parseInt(data.trim())
-                if (!isNaN(val) && val >= 0 && val <= 100) {
-                    transparencySettings.terminalOpacity = val
-                }
-            }
+    
+    // Load settings from files (AGS compatibility)
+    function loadSettings() {
+        // Load global transparency mode
+        Process.exec("bash", ["-c", `mkdir -p $(dirname "${colorModeFile}")`])
+        let colorModeResult = Process.exec("bash", ["-c", `sed -n '2p' "${colorModeFile}" 2>/dev/null || echo "opaque"`])
+        globalTransparency = (colorModeResult.stdout.trim() === "transparent")
+        
+        // Load terminal opacity
+        Process.exec("bash", ["-c", `mkdir -p $(dirname "${terminalTransparencyFile}")`])
+        let termOpacityResult = Process.exec("bash", ["-c", `cat "${terminalTransparencyFile}" 2>/dev/null || echo "100"`])
+        terminalOpacity = parseInt(termOpacityResult.stdout.trim()) || 100
+        
+        // Load Hyprland blur settings
+        loadHyprlandSettings()
+    }
+    
+    function loadHyprlandSettings() {
+        // Load blur enabled
+        let blurResult = Process.exec("hyprctl", ["getoption", "-j", "decoration:blur:enabled"])
+        try {
+            let blurData = JSON.parse(blurResult.stdout)
+            blurEnabled = blurData.int !== 0
+        } catch (e) {
+            console.log("Failed to load blur enabled setting:", e)
+        }
+        
+        // Load blur xray
+        let xrayResult = Process.exec("hyprctl", ["getoption", "-j", "decoration:blur:xray"])
+        try {
+            let xrayData = JSON.parse(xrayResult.stdout)
+            blurXray = xrayData.int !== 0
+        } catch (e) {
+            console.log("Failed to load blur xray setting:", e)
+        }
+        
+        // Load blur size
+        let sizeResult = Process.exec("hyprctl", ["getoption", "-j", "decoration:blur:size"])
+        try {
+            let sizeData = JSON.parse(sizeResult.stdout)
+            blurSize = sizeData.int
+        } catch (e) {
+            console.log("Failed to load blur size setting:", e)
+        }
+        
+        // Load blur passes
+        let passesResult = Process.exec("hyprctl", ["getoption", "-j", "decoration:blur:passes"])
+        try {
+            let passesData = JSON.parse(passesResult.stdout)
+            blurPasses = passesData.int
+        } catch (e) {
+            console.log("Failed to load blur passes setting:", e)
         }
     }
-
-    // Load blur settings from Hyprland
-    Process {
-        id: loadBlur
-        command: ["hyprctl", "getoption", "-j", "decoration:blur:enabled"]
-        stdout: SplitParser {
-            onRead: data => {
-                try {
-                    let d = JSON.parse(data)
-                    transparencySettings.blurEnabled = d.int !== 0
-                } catch(e) {}
-            }
-        }
-    }
-
-    // Save and apply terminal opacity
-    function setTerminalOpacity(opacity) {
-        terminalOpacity = opacity
-        applyOpacity.command = ["bash", "-c",
-            "mkdir -p '" + stateDir + "/user/generated/terminal' && " +
-            "echo '" + opacity + "' > '" + stateDir + "/user/generated/terminal/opacity' && " +
-            "cd '" + scriptDir + "' && bash applycolor.sh foot && bash applycolor.sh term"
-        ]
-        applyOpacity.running = true
-    }
-
-    Process {
-        id: applyOpacity
-    }
-
+    
     // Save and apply global transparency
     function setGlobalTransparency(enabled) {
         globalTransparency = enabled
         let mode = enabled ? "transparent" : "opaque"
-        applyTransparency.command = ["bash", "-c",
-            "mkdir -p '" + stateDir + "/user/generated/terminal' && " +
-            "echo '" + mode + "' > '" + stateDir + "/user/generated/terminal/transparency' && " +
-            "cd '" + scriptDir + "' && bash applycolor.sh foot && bash applycolor.sh term"
-        ]
-        applyTransparency.running = true
+        
+        // Save to colormode.txt (line 2)
+        Process.exec("bash", ["-c", `mkdir -p $(dirname "${colorModeFile}")
+            if [ ! -f "${colorModeFile}" ]; then
+                echo "dark" > "${colorModeFile}"
+                echo "${mode}" >> "${colorModeFile}"
+            else
+                sed -i "2s/.*/${mode}/" "${colorModeFile}"
+            fi`])
+        
+        // Apply color changes (equivalent to AGS switchcolor.sh)
+        applyColorChanges()
     }
-
-    Process {
-        id: applyTransparency
+    
+    // Save and apply terminal opacity
+    function setTerminalOpacity(opacity) {
+        terminalOpacity = opacity
+        
+        // Save to terminal opacity file and apply via applycolor.sh
+        Process.exec("bash", ["-c", `
+            mkdir -p ~/.local/state/quickshell/user/generated/terminal &&
+            echo "${opacity}" > ~/.local/state/quickshell/user/generated/terminal/opacity &&
+            ~/.config/quickshell/ii/scripts/colors/applycolor.sh --term
+        `])
     }
-
+    
     // Apply Hyprland blur settings
     function setBlurEnabled(enabled) {
         blurEnabled = enabled
-        Quickshell.execDetached(["hyprctl", "keyword", "decoration:blur:enabled", enabled ? "1" : "0"])
+        Process.exec("hyprctl", ["keyword", "decoration:blur:enabled", enabled ? "1" : "0"])
     }
     
     function setBlurXray(enabled) {
         blurXray = enabled
-        Quickshell.execDetached(["hyprctl", "keyword", "decoration:blur:xray", enabled ? "1" : "0"])
+        Process.exec("hyprctl", ["keyword", "decoration:blur:xray", enabled ? "1" : "0"])
     }
     
     function setBlurSize(size) {
         blurSize = size
-        Quickshell.execDetached(["hyprctl", "keyword", "decoration:blur:size", size.toString()])
+        Process.exec("hyprctl", ["keyword", "decoration:blur:size", size.toString()])
     }
     
     function setBlurPasses(passes) {
         blurPasses = passes
-        Quickshell.execDetached(["hyprctl", "keyword", "decoration:blur:passes", passes.toString()])
+        Process.exec("hyprctl", ["keyword", "decoration:blur:passes", passes.toString()])
     }
-
+    
+    // Apply color changes (equivalent to AGS color generation)
+    function applyColorChanges() {
+        // This would call the equivalent of AGS color generation scripts
+        Process.exec("bash", ["-c", `
+            # Apply transparency mode to all shell elements
+            # This is where we'd integrate with the quickshell theming system
+            echo "Applying transparency mode: ${globalTransparency ? 'transparent' : 'opaque'}"
+            
+            # Reload quickshell to apply changes
+            quickshell ipc call settings reload || true
+        `])
+    }
+    
+    // Apply terminal colors (equivalent to AGS applycolor.sh term)
+    function applyTerminalColors() {
+        let alpha = terminalOpacity / 100.0
+        
+        Process.exec("bash", ["-c", `
+            # Update foot terminal configuration with new opacity
+            FOOT_CONFIG="$HOME/.config/foot/foot.ini"
+            if [ -f "$FOOT_CONFIG" ]; then
+                # Update alpha value in foot.ini
+                sed -i "s/^alpha=.*/alpha=${alpha}/" "$FOOT_CONFIG" || echo "alpha=${alpha}" >> "$FOOT_CONFIG"
+            fi
+            
+            # Regenerate terminal sequences with new alpha
+            STATE_DIR="$HOME/.local/state/quickshell"
+            SCRIPT_DIR="$HOME/.config/quickshell/ii/scripts/colors"
+            
+            if [ -f "$SCRIPT_DIR/terminal/sequences.txt" ]; then
+                mkdir -p "$STATE_DIR/user/generated/terminal"
+                cp "$SCRIPT_DIR/terminal/sequences.txt" "$STATE_DIR/user/generated/terminal/sequences.txt"
+                
+                # Replace alpha placeholder with actual value
+                sed -i "s/\\[100\\]/[${terminalOpacity}]/g" "$STATE_DIR/user/generated/terminal/sequences.txt"
+                
+                # Apply to running terminals
+                for file in /dev/pts/*; do
+                    if [[ $file =~ ^/dev/pts/[0-9]+$ ]]; then
+                        cat "$STATE_DIR/user/generated/terminal/sequences.txt" > "$file" 2>/dev/null || true
+                    fi
+                done
+            fi
+            
+            echo "Applied terminal opacity: ${terminalOpacity}%"
+        `])
+    }
+    
     // IPC Handler for external control
     IpcHandler {
         target: "transparencySettings"
@@ -151,8 +220,7 @@ Rectangle {
         }
         
         function reload() {
-            loadOpacity.running = true
-            loadBlur.running = true
+            transparencySettings.loadSettings()
         }
     }
 }

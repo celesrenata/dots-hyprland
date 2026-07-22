@@ -15,7 +15,7 @@ Scope {
     property bool dontAutoCancelSearch: false
     Variants {
         id: overviewVariants
-        model: Quickshell.screens
+        model: Quickshell.screens.filter(screen => screen.name !== "DP-3")
         PanelWindow {
             id: root
             required property var modelData
@@ -177,6 +177,10 @@ Scope {
         }
         function open() {
             GlobalStates.overviewOpen = true;
+        }
+        function setSearchingText(text) {
+            GlobalStates.overviewOpen = true;
+            panelWindow.setSearchingText(text);
         }
         function toggleReleaseInterrupt() {
             GlobalStates.superReleaseMightTrigger = false;

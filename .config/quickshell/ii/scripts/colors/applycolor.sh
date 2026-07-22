@@ -60,12 +60,10 @@ apply_term() {
 
   sed -i "s/\$alpha/$term_alpha/g" "$STATE_DIR/user/generated/terminal/sequences.txt"
 
-  echo "$(date): Sending sequences to terminals, alpha=$term_alpha" >> /tmp/terminal_settings.log
   for file in /dev/pts/*; do
     if [[ $file =~ ^/dev/pts/[0-9]+$ ]]; then
       {
       cat "$STATE_DIR"/user/generated/terminal/sequences.txt >"$file"
-      echo "$(date): Sent to $file" >> /tmp/terminal_settings.log
       } & disown || true
     fi
   done
@@ -85,6 +83,9 @@ apply_foot() {
   local alpha_decimal=$(awk "BEGIN {printf \"%.2f\", $term_alpha/100}")
   sed -i "s/{{ \$alpha }}/$alpha_decimal/g" "$STATE_DIR"/user/generated/foot/foot.ini
   cp "$STATE_DIR"/user/generated/foot/foot.ini "$XDG_CONFIG_HOME/foot/foot.ini"
+
+  # Signal running foot instances to reload config (colors hot-reload on new terminals)
+  pkill -USR1 foot 2>/dev/null || true
 }
 
 apply_wofi() {
@@ -122,4 +123,3 @@ fi
 
 apply_foot &
 apply_wofi &
-

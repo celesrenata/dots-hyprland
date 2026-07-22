@@ -3,14 +3,20 @@
 # Log execution
 LOG="/tmp/switchwall.log"
 echo "[$(date)] switchwall.sh started" >> "$LOG"
-
+# Set default venv path if not already set
 ILLOGICAL_IMPULSE_VIRTUAL_ENV="${ILLOGICAL_IMPULSE_VIRTUAL_ENV:-$HOME/.local/state/quickshell/.venv}"
 echo "ILLOGICAL_IMPULSE_VIRTUAL_ENV=$ILLOGICAL_IMPULSE_VIRTUAL_ENV" >> "$LOG"
 
-# Ensure LD_LIBRARY_PATH includes system libraries for Python venv
-# Use nix-ld library path instead of fragile nix store find
-export LD_LIBRARY_PATH="/run/current-system/sw/share/nix-ld/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
-echo "LD_LIBRARY_PATH=$LD_LIBRARY_PATH" >> "$LOG"
+# Ensure LD_LIBRARY_PATH includes libstdc++ for Python native modules
+if [ -z "$LD_LIBRARY_PATH" ] || ! echo "$LD_LIBRARY_PATH" | grep -q "nix-ld"; then
+    NIX_LD_LIBS="/run/current-system/sw/share/nix-ld/lib"
+    if [ -d "$NIX_LD_LIBS" ]; then
+        export LD_LIBRARY_PATH="${NIX_LD_LIBS}${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+    else
+        export LD_LIBRARY_PATH="/run/current-system/sw/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+    fi
+    echo "Set LD_LIBRARY_PATH=$LD_LIBRARY_PATH" >> "$LOG"
+fi
 
 QUICKSHELL_CONFIG_NAME="ii"
 XDG_CONFIG_HOME="${XDG_CONFIG_HOME:-$HOME/.config}"
@@ -169,6 +175,10 @@ set_wallpaper_path() {
     if [ -f "$SHELL_CONFIG_FILE" ]; then
         jq --arg path "$path" '.background.wallpaperPath = $path' "$SHELL_CONFIG_FILE" > "$SHELL_CONFIG_FILE.tmp" && mv "$SHELL_CONFIG_FILE.tmp" "$SHELL_CONFIG_FILE"
     fi
+    # Apply wallpaper with awww
+    if [ -f "$path" ]; then
+        awww img "$path" 2>/dev/null
+    fi
 }
 
 set_thumbnail_path() {
@@ -200,7 +210,10 @@ switch() {
             exit 0
         fi
 
-        check_and_prompt_upscale "$imgpath" &
+        # Only check upscale if not using --noswitch
+        if [[ -z "$noswitch_flag" ]]; then
+            check_and_prompt_upscale "$imgpath" &
+        fi
         kill_existing_mpvpaper
 
         if is_video "$imgpath"; then
@@ -293,25 +306,34 @@ switch() {
         fi
     fi
 
-    matugen "${matugen_args[@]}" --source-color-index 0
+    matugen --source-color-index 0 "${matugen_args[@]}"
     echo "[$(date)] Running python script" >> "$LOG"
-    [ -f "$XDG_CONFIG_HOME/quickshell/env.sh" ] && source "$XDG_CONFIG_HOME/quickshell/env.sh"
     "$(eval echo $ILLOGICAL_IMPULSE_VIRTUAL_ENV)/bin/python3" "$SCRIPT_DIR/generate_colors_material.py" "${generate_colors_material_args[@]}" \
         > "$STATE_DIR"/user/generated/material_colors.scss 2>> "$LOG"
     echo "[$(date)] Python done, scss size: $(wc -l < "$STATE_DIR"/user/generated/material_colors.scss)" >> "$LOG"
     
-    # Convert SCSS to JSON for quickshell MaterialThemeLoader
-    awk -F': ' '/^\$/ {gsub(/\$|;/, "", $0); print "\"" $1 "\": \"" $2 "\","}' \
-        "$STATE_DIR"/user/generated/material_colors.scss | \
-        sed '$ s/,$//' | \
-        (echo "{"; cat; echo "}") > "$STATE_DIR"/user/generated/colors.json.tmp
-    mv "$STATE_DIR"/user/generated/colors.json.tmp "$STATE_DIR"/user/generated/colors.json
-    touch "$STATE_DIR"/user/generated/colors.json
+    # Only convert to JSON if SCSS was generated successfully
+    if [ -s "$STATE_DIR"/user/generated/material_colors.scss ]; then
+        # Convert SCSS to JSON for quickshell MaterialThemeLoader
+        echo "[$(date)] Converting SCSS to JSON" >> "$LOG"
+        awk -F': ' '/^\$/ {gsub(/\$|;/, "", $0); print "\"" $1 "\": \"" $2 "\","}' \
+            "$STATE_DIR"/user/generated/material_colors.scss | \
+            sed '$ s/,$//' | \
+            (echo "{"; cat; echo "}") > "$STATE_DIR"/user/generated/colors.json
+        sync "$STATE_DIR"/user/generated/colors.json
+        echo "[$(date)] JSON created, size: $(wc -l < "$STATE_DIR"/user/generated/colors.json)" >> "$LOG"
+    else
+        echo "[$(date)] SCSS generation failed, skipping JSON creation" >> "$LOG"
+    fi
     
-    "$SCRIPT_DIR/applycolor.sh"
+    "$XDG_CONFIG_HOME/quickshell/scripts/colors/applycolor.sh"
+    
+    # Wait for all file operations to complete
+    wait
+    sleep 1
     
     # Trigger quickshell to reload theme via IPC (doesn't restart the process)
-    quickshell ipc -c ii call materialTheme reload 2>/dev/null || true
+    quickshell -p ~/.config/quickshell/ii ipc call materialTheme reload 2>/dev/null || true
 
     # Pass screen width, height, and wallpaper path to post_process
     max_width_desired="$(hyprctl monitors -j | jq '([.[].width] | min)' | xargs)"
@@ -326,6 +348,7 @@ main() {
     color_flag=""
     color=""
     noswitch_flag=""
+    choose_flag=""
 
     get_type_from_config() {
         jq -r '.appearance.palette.type' "$SHELL_CONFIG_FILE" 2>/dev/null || echo "auto"
@@ -338,15 +361,6 @@ main() {
 
     while [[ $# -gt 0 ]]; do
         case "$1" in
-            --choose)
-                # Interactive wallpaper selection using file picker
-                imgpath=$(yad --file --title="Select Wallpaper" --file-filter="Images | *.jpg *.jpeg *.png *.webp" --filename="$HOME/Backgrounds/" 2>/dev/null)
-                if [[ -z "$imgpath" ]]; then
-                    echo "No wallpaper selected"
-                    exit 0
-                fi
-                shift
-                ;;
             --mode)
                 mode_flag="$2"
                 shift 2
@@ -372,6 +386,10 @@ main() {
             --noswitch)
                 noswitch_flag="1"
                 imgpath=$(jq -r '.background.wallpaperPath' "$SHELL_CONFIG_FILE" 2>/dev/null || echo "")
+                shift
+                ;;
+            --choose)
+                choose_flag="1"
                 shift
                 ;;
             *)
@@ -405,13 +423,13 @@ main() {
     # Only prompt for wallpaper if not using --color and not using --noswitch and no imgpath set
     if [[ -z "$imgpath" && -z "$color_flag" && -z "$noswitch_flag" ]]; then
         # Try to pick a random wallpaper from Wallpapers directory
-        WALLPAPER_DIR="$(xdg-user-dir PICTURES)/Wallpapers"
-        if [[ -d "$WALLPAPER_DIR" ]]; then
+        WALLPAPER_DIR="$(xdg-user-dir PICTURES)/Backgrounds"
+        if [[ -d "$WALLPAPER_DIR" ]] && [[ -z "$choose_flag" ]]; then
             imgpath=$(find "$WALLPAPER_DIR" -type f \( -name "*.jpg" -o -name "*.png" \) 2>/dev/null | shuf -n 1)
         fi
         
-        # If still no wallpaper, prompt with kdialog
-        if [[ -z "$imgpath" ]]; then
+        # If --choose flag is set or still no wallpaper, prompt with kdialog
+        if [[ -n "$choose_flag" ]] || [[ -z "$imgpath" ]]; then
             cd "$(xdg-user-dir PICTURES)/Wallpapers/showcase" 2>/dev/null || cd "$(xdg-user-dir PICTURES)/Wallpapers" 2>/dev/null || cd "$(xdg-user-dir PICTURES)" || return 1
             imgpath="$(kdialog --getopenfilename . --title 'Choose wallpaper')"
         fi
@@ -441,36 +459,7 @@ main() {
         fi
     fi
 
-    # If mode_flag is dark or light, try to find a variant with that mode suffix
-    if [[ "$mode_flag" == "dark" || "$mode_flag" == "light" ]]; then
-        # Get directory, filename without extension, and extension
-        local imgdir="$(dirname "$imgpath")"
-        local imgbase="$(basename "$imgpath")"
-        local imgname="${imgbase%.*}"
-        local imgext="${imgbase##*.}"
-
-        # Strip existing -dark or -light suffix
-        local stripped_name="${imgname%-dark}"
-        stripped_name="${stripped_name%-light}"
-
-        # Construct the new path with the requested mode suffix
-        local new_imgpath="${imgdir}/${stripped_name}-${mode_flag}.${imgext}"
-        local new_stripped_imgpath="${imgdir}/${stripped_name}.${imgext}"
-
-        # If the variant exists, use it
-        if [[ -f "$new_imgpath" ]]; then
-            imgpath="$new_imgpath"
-        elif [[ -f "$new_stripped_imgpath" ]]; then
-            imgpath="$new_stripped_imgpath"
-        fi
-    fi
-
     switch "$imgpath" "$mode_flag" "$type_flag" "$color_flag" "$color"
-
-    # Sync RGB lighting to new wallpaper colors
-    if [ -x "$HOME/.local/bin/sync-rgb.sh" ]; then
-        "$HOME/.local/bin/sync-rgb.sh" &
-    fi
 }
 
 main "$@"

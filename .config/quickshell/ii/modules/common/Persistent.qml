@@ -31,10 +31,15 @@ Singleton {
             property JsonObject ai: JsonObject {
                 property string model
                 property real temperature: 0.5
+                property string activeSession: "Chat 1"
+                // Per-model tuning settings keyed by model ID
+                // Each entry: { temperature, reasoningEffort, webSearch, searchContextSize, verbosity }
+                property var modelSettings: ({})
             }
 
             property JsonObject sidebar: JsonObject {
                 property real leftWidth: 460
+                property bool poppedOut: false
                 property JsonObject bottomGroup: JsonObject {
                     property bool collapsed: false
                     property int tab: 0

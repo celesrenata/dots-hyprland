@@ -1,0 +1,48 @@
+"""Voice agent backend implementations and protocol helpers."""
+
+from voice_agent_backends.base import BaseVoiceBackend, VoiceAgentConfig
+from voice_agent_backends.protocol import (
+    AudioResponseEvent,
+    BargeInEvent,
+    ErrorEvent,
+    FallbackEvent,
+    PartialTranscriptEvent,
+    ReadyEvent,
+    SessionEndEvent,
+    StopEvent,
+    ToolCallEvent,
+    ToolResultEvent,
+    TurnCompleteEvent,
+    TurnEndEvent,
+    decode_audio,
+    deserialize_event,
+    encode_audio,
+    parse_input_event_typed,
+    serialize_event,
+    validate_input_event,
+    validate_output_event,
+)
+
+__all__ = [
+    "BaseVoiceBackend",
+    "VoiceAgentConfig",
+    "AudioResponseEvent",
+    "BargeInEvent",
+    "ErrorEvent",
+    "FallbackEvent",
+    "PartialTranscriptEvent",
+    "ReadyEvent",
+    "SessionEndEvent",
+    "StopEvent",
+    "ToolCallEvent",
+    "ToolResultEvent",
+    "TurnCompleteEvent",
+    "TurnEndEvent",
+    "decode_audio",
+    "deserialize_event",
+    "encode_audio",
+    "parse_input_event_typed",
+    "serialize_event",
+    "validate_input_event",
+    "validate_output_event",
+]

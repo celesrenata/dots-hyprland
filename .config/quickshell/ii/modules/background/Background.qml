@@ -20,7 +20,7 @@ Scope {
     readonly property real fixedClockY: Config.options.background.clockY
 
     Variants {
-        model: Quickshell.screens
+        model: Quickshell.screens.filter(screen => screen.name !== "DP-3")
 
         PanelWindow {
             id: bgRoot
